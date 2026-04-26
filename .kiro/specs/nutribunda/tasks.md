@@ -33,13 +33,21 @@ Implementasi dibagi menjadi 6 fase utama:
     - Konfigurasi `go.mod` dengan dependencies (Gin, GORM, JWT, bcrypt)
     - _Requirements: 1.2, 1.3_
 
-  - [ ] 1.3 Konfigurasi database PostgreSQL
+  - [ ] 1.3 Setup PostgreSQL menggunakan Docker
+    - Buat `docker-compose.yml` untuk PostgreSQL container
+    - Konfigurasi environment variables untuk database connection
+    - Setup volume untuk data persistence
+    - Buat script untuk database initialization
+    - _Requirements: 3.1, 4.1_
+
+  - [ ] 1.4 Konfigurasi database schema dan migrations
     - Setup schema database dengan 7 tabel utama
     - Buat migration files untuk semua tabel
     - Setup connection pool dan konfigurasi GORM
+    - Test koneksi database dari aplikasi Golang
     - _Requirements: 3.1, 4.1_
 
-  - [ ]* 1.4 Setup testing framework untuk backend dan frontend
+  - [ ]* 1.5 Setup testing framework untuk backend dan frontend
     - Konfigurasi testing untuk Go (testify)
     - Konfigurasi testing untuk Flutter (flutter_test, mockito)
     - _Requirements: Semua_
@@ -358,6 +366,44 @@ Implementasi dibagi menjadi 6 fase utama:
 ---
 
 ## Catatan Implementasi
+
+### Docker Setup untuk PostgreSQL
+Untuk memudahkan development, PostgreSQL akan dijalankan menggunakan Docker dengan konfigurasi:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: nutribunda
+      POSTGRES_USER: nutribunda_user
+      POSTGRES_PASSWORD: nutribunda_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+volumes:
+  postgres_data:
+```
+
+**Commands untuk development:**
+- `docker-compose up -d` - Start PostgreSQL container
+- `docker-compose down` - Stop container  
+- `docker-compose logs postgres` - View logs
+- `docker-compose exec postgres psql -U nutribunda_user -d nutribunda` - Connect to database
+
+**Environment variables untuk Golang:**
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=nutribunda_user
+DB_PASSWORD=nutribunda_pass
+DB_NAME=nutribunda
+DB_SSLMODE=disable
+```
 
 ### Prioritas Fitur
 - **Core Features** (Fase 1-4): Autentikasi, Food Diary, Diet Plan - wajib untuk MVP
