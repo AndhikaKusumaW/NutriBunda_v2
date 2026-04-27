@@ -130,13 +130,13 @@ flutter run
 
 ## 🗄️ Database
 
-### Connection Details
+<!-- ### Connection Details
 
 - **Host**: localhost
 - **Port**: 5432
 - **Database**: nutribunda
 - **User**: nutribunda_user
-- **Password**: nutribunda_pass
+- **Password**: nutribunda_pass -->
 
 ### Tables
 
