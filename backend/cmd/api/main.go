@@ -5,7 +5,9 @@ import (
 	"nutribunda-backend/configs"
 	"nutribunda-backend/internal/auth"
 	"nutribunda-backend/internal/database"
+	"nutribunda-backend/internal/food"
 	"nutribunda-backend/internal/middleware"
+	"nutribunda-backend/internal/recipe"
 	"nutribunda-backend/internal/user"
 
 	"github.com/gin-gonic/gin"
@@ -33,10 +35,14 @@ func main() {
 	}
 
 	userService := user.NewService(db, "./uploads")
+	foodService := food.NewService(db)
+	recipeService := recipe.NewService(db)
 
 	// Initialize handlers
 	authHandler := auth.NewHandler(authService)
 	userHandler := user.NewHandler(userService)
+	foodHandler := food.NewHandler(foodService)
+	recipeHandler := recipe.NewHandler(recipeService)
 
 	// Initialize Gin router
 	router := gin.Default()
@@ -74,6 +80,28 @@ func main() {
 			profileRoutes.PUT("", userHandler.UpdateProfile)
 			profileRoutes.POST("/upload-image", userHandler.UploadProfileImage)
 			profileRoutes.DELETE("/image", userHandler.DeleteProfileImage)
+		}
+
+		// Food routes (public)
+		foodRoutes := api.Group("/foods")
+		{
+			foodRoutes.GET("", foodHandler.SearchFoods)
+			foodRoutes.GET("/sync", foodHandler.SyncFoods)
+			foodRoutes.GET("/:id", foodHandler.GetFoodByID)
+		}
+
+		// Recipe routes
+		recipeRoutes := api.Group("/recipes")
+		{
+			// Public routes
+			recipeRoutes.GET("", recipeHandler.SearchRecipes)
+			recipeRoutes.GET("/random", recipeHandler.GetRandomRecipe)
+			recipeRoutes.GET("/:id", recipeHandler.GetRecipeByID)
+
+			// Protected routes
+			recipeRoutes.GET("/favorites", auth.JWTMiddleware(authService), recipeHandler.GetFavorites)
+			recipeRoutes.POST("/:id/favorite", auth.JWTMiddleware(authService), recipeHandler.AddFavorite)
+			recipeRoutes.DELETE("/:id/favorite", auth.JWTMiddleware(authService), recipeHandler.RemoveFavorite)
 		}
 	}
 

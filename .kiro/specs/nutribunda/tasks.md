@@ -76,20 +76,20 @@ Implementasi dibagi menjadi 6 fase utama:
     - Test upload foto profil
     - _Requirements: 12.4, 12.5_
 
-- [ ] 3. Implementasi Food Database dan API
-  - [ ] 3.1 Setup Food Database dengan data makanan MPASI
+- [x] 3. Implementasi Food Database dan API
+  - [x] 3.1 Setup Food Database dengan data makanan MPASI
     - Buat model Food dengan nutrisi lengkap
     - Implementasi seeding data makanan MPASI dan ibu
     - Buat API endpoints untuk pencarian makanan
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 3.2 Implementasi Recipe API dan favorit
+  - [x] 3.2 Implementasi Recipe API dan favorit
     - Buat model Recipe dengan ingredients dan instructions
     - Implementasi endpoints untuk resep favorit
     - Buat endpoint random recipe untuk shake-to-recipe
     - _Requirements: 6.3, 7.1, 7.2, 7.3_
 
-  - [ ] 3.3 Write property test untuk Food Database
+  - [x] 3.3 Write property test untuk Food Database
     - **Property 2: Nutrition calculation consistency**
     - **Validates: Requirements 3.1, 4.3**
 
