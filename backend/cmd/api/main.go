@@ -3,8 +3,10 @@ package main
 import (
 	"log"
 	"nutribunda-backend/configs"
+	"nutribunda-backend/internal/auth"
 	"nutribunda-backend/internal/database"
 	"nutribunda-backend/internal/middleware"
+	"nutribunda-backend/internal/user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,11 +26,26 @@ func main() {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
+	// Initialize services
+	authService, err := auth.NewService(db, config.JWTSecret, config.JWTExpiration)
+	if err != nil {
+		log.Fatalf("Failed to initialize auth service: %v", err)
+	}
+
+	userService := user.NewService(db, "./uploads")
+
+	// Initialize handlers
+	authHandler := auth.NewHandler(authService)
+	userHandler := user.NewHandler(userService)
+
 	// Initialize Gin router
 	router := gin.Default()
 
 	// Apply middleware
 	router.Use(middleware.CORS())
+
+	// Serve static files (uploaded images)
+	router.Static("/uploads", "./uploads")
 
 	// API routes
 	api := router.Group("/api")
@@ -41,12 +58,23 @@ func main() {
 			})
 		})
 
-		// TODO: Register route handlers here
-		// auth := api.Group("/auth")
-		// {
-		//     auth.POST("/register", authHandler.Register)
-		//     auth.POST("/login", authHandler.Login)
-		// }
+		// Auth routes (public)
+		authRoutes := api.Group("/auth")
+		{
+			authRoutes.POST("/register", authHandler.Register)
+			authRoutes.POST("/login", authHandler.Login)
+			authRoutes.POST("/logout", auth.JWTMiddleware(authService), authHandler.Logout)
+		}
+
+		// Profile routes (protected)
+		profileRoutes := api.Group("/profile")
+		profileRoutes.Use(auth.JWTMiddleware(authService))
+		{
+			profileRoutes.GET("", userHandler.GetProfile)
+			profileRoutes.PUT("", userHandler.UpdateProfile)
+			profileRoutes.POST("/upload-image", userHandler.UploadProfileImage)
+			profileRoutes.DELETE("/image", userHandler.DeleteProfileImage)
+		}
 	}
 
 	// Start server

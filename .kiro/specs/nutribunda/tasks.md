@@ -54,24 +54,24 @@ Implementasi dibagi menjadi 6 fase utama:
 
 ### Fase 2: Backend Development
 
-- [ ] 2. Implementasi autentikasi dan keamanan backend
-  - [ ] 2.1 Implementasi Auth Service dengan JWT dan bcrypt
+- [x] 2. Implementasi autentikasi dan keamanan backend
+  - [x] 2.1 Implementasi Auth Service dengan JWT dan bcrypt
     - Buat handler registrasi dengan bcrypt password hashing
     - Buat handler login dengan JWT token generation
     - Implementasi middleware JWT untuk proteksi endpoint
     - _Requirements: 1.1, 1.2, 1.3, 1.6_
 
-  - [ ]* 2.2 Write property test untuk Auth Service
+  - [x] 2.2 Write property test untuk Auth Service
     - **Property 1: Password hashing consistency**
     - **Validates: Requirements 1.2**
 
-  - [ ] 2.3 Implementasi User Profile API endpoints
+  - [x] 2.3 Implementasi User Profile API endpoints
     - Buat CRUD endpoints untuk user profile
     - Implementasi upload dan kompresi foto profil
     - Validasi data profil (berat badan 30-200kg, tinggi 100-250cm)
     - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-  - [ ]* 2.4 Write unit tests untuk User Profile endpoints
+  - [x] 2.4 Write unit tests untuk User Profile endpoints
     - Test validasi data profil
     - Test upload foto profil
     - _Requirements: 12.4, 12.5_
