@@ -323,34 +323,46 @@ Developed by TPM Team - Semester 6
 
 ## 📊 Status Implementasi
 
-**Progress**: 3/20 Tasks Complete (15%)
+**Progress**: 4/20 Tasks Complete (20%)
 
 ### ✅ Completed Tasks
 
 - **Task 1**: Setup Proyek dan Infrastruktur
-  - Struktur proyek Flutter dan Golang
-  - PostgreSQL dengan Docker
-  - Database schema dan migrations
-  - Testing framework
+  - Inisialisasi proyek Flutter dengan clean architecture (`lib/core/`, `lib/data/`, `lib/domain/`, `lib/presentation/`)
+  - Setup backend Golang dengan struktur modular (`cmd/`, `internal/`, `pkg/`, `configs/`)
+  - PostgreSQL dengan Docker (`docker-compose.yml`) + volume persistence
+  - Database schema 7 tabel + GORM AutoMigrate
+  - Testing framework: testify (Go) + flutter_test/mockito (Flutter)
 
 - **Task 2**: Autentikasi dan Keamanan Backend
-  - Auth Service dengan JWT dan bcrypt
-  - Property tests untuk Auth Service
-  - User Profile API endpoints
-  - Unit tests untuk User Profile
+  - Auth Service: registrasi, login, JWT generation, bcrypt password hashing
+  - JWT middleware untuk proteksi endpoint
+  - User Profile API: CRUD, upload & kompresi foto profil, validasi data
+  - Property test: password hashing consistency
+  - Unit tests: validasi profil & upload foto
 
 - **Task 3**: Food Database dan API
-  - Food Database dengan data MPASI
-  - Recipe API dan favorit
-  - Property tests untuk Food Database
+  - Model `Food` dengan nutrisi lengkap (kalori, protein, karbohidrat, lemak per 100g)
+  - Seeding data makanan MPASI dan makanan ibu
+  - API pencarian makanan dengan filter kategori
+  - Recipe API: CRUD, favorit, random recipe (untuk shake-to-recipe)
+  - Property test: nutrition calculation consistency
 
-### 🚧 In Progress
-
-- **Task 4**: Food Diary API (Next)
+- **Task 4**: Food Diary API
+  - Model `DiaryEntry` dengan dual profile (bayi & ibu)
+  - CRUD endpoints diary entries dengan kalkulasi nutrition summary harian
+  - Kategorisasi slot waktu: Makan Pagi, Siang, Malam, Selingan
+  - Endpoint sinkronisasi data offline dengan timestamp & conflict resolution
+  - Property test: nutrition tracking consistency
 
 ### 📋 Upcoming
 
-- Task 5-20: Frontend Core, Fitur Utama, Integrasi Eksternal, Testing & Finalisasi
+- **Task 5–6**: Frontend Core — state management (Provider + GetIt), secure storage, HTTP client, autentikasi Flutter, biometric auth
+- **Task 7–9**: Fitur Utama — Food Diary UI, Diet Plan (BMR/TDEE), nutrition visualization
+- **Task 10–11**: Sensor & Resep — pedometer, shake detection, recipe management, favorit
+- **Task 12–14**: Integrasi Eksternal — LBS (Google Maps deep link), AI Chatbot (Gemini), Quiz Game, Notifikasi
+- **Task 15–17**: UI/UX & Offline — navigation, profile management, SQLite offline, data sync
+- **Task 18–20**: Testing & Finalisasi — integration tests, performance optimization, security audit
 
 ---
 
