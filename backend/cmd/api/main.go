@@ -5,6 +5,7 @@ import (
 	"nutribunda-backend/configs"
 	"nutribunda-backend/internal/auth"
 	"nutribunda-backend/internal/database"
+	"nutribunda-backend/internal/diary"
 	"nutribunda-backend/internal/food"
 	"nutribunda-backend/internal/middleware"
 	"nutribunda-backend/internal/recipe"
@@ -37,12 +38,14 @@ func main() {
 	userService := user.NewService(db, "./uploads")
 	foodService := food.NewService(db)
 	recipeService := recipe.NewService(db)
+	diaryService := diary.NewService(db)
 
 	// Initialize handlers
 	authHandler := auth.NewHandler(authService)
 	userHandler := user.NewHandler(userService)
 	foodHandler := food.NewHandler(foodService)
 	recipeHandler := recipe.NewHandler(recipeService)
+	diaryHandler := diary.NewHandler(diaryService)
 
 	// Initialize Gin router
 	router := gin.Default()
@@ -102,6 +105,17 @@ func main() {
 			recipeRoutes.GET("/favorites", auth.JWTMiddleware(authService), recipeHandler.GetFavorites)
 			recipeRoutes.POST("/:id/favorite", auth.JWTMiddleware(authService), recipeHandler.AddFavorite)
 			recipeRoutes.DELETE("/:id/favorite", auth.JWTMiddleware(authService), recipeHandler.RemoveFavorite)
+		}
+
+		// Diary routes (protected)
+		diaryRoutes := api.Group("/diary")
+		diaryRoutes.Use(auth.JWTMiddleware(authService))
+		{
+			diaryRoutes.POST("", diaryHandler.CreateEntry)
+			diaryRoutes.GET("", diaryHandler.GetEntries)
+			diaryRoutes.DELETE("/:id", diaryHandler.DeleteEntry)
+			diaryRoutes.POST("/sync", diaryHandler.SyncEntries)
+			diaryRoutes.POST("/resolve-conflict", diaryHandler.ResolveConflict)
 		}
 	}
 

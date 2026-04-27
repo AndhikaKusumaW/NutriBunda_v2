@@ -93,19 +93,19 @@ Implementasi dibagi menjadi 6 fase utama:
     - **Property 2: Nutrition calculation consistency**
     - **Validates: Requirements 3.1, 4.3**
 
-- [ ] 4. Implementasi Food Diary API
-  - [ ] 4.1 Buat Food Diary endpoints dengan dual profile
+- [x] 4. Implementasi Food Diary API
+  - [x] 4.1 Buat Food Diary endpoints dengan dual profile
     - Implementasi model DiaryEntry untuk bayi dan ibu
     - Buat endpoints untuk CRUD diary entries
     - Implementasi kalkulasi nutrition summary harian
     - _Requirements: 4.1, 4.2, 4.3, 4.5_
 
-  - [ ] 4.2 Implementasi sinkronisasi data offline
+  - [x] 4.2 Implementasi sinkronisasi data offline
     - Buat endpoints untuk sync data dengan timestamp
     - Implementasi conflict resolution untuk data sync
     - _Requirements: 3.4, 3.5, 7.4_
 
-  - [ ] 4.3 Write property test untuk Nutrition Tracking
+  - [x] 4.3 Write property test untuk Nutrition Tracking
     - **Property 3: Nutrition tracking consistency**
     - **Validates: Requirements 4.3, 4.5**
 
@@ -227,21 +227,25 @@ Implementasi dibagi menjadi 6 fase utama:
 ### Fase 6: Integrasi Eksternal dan Fitur Lanjutan
 
 - [ ] 12. Implementasi Location-Based Service (LBS)
-  - [ ] 12.1 Setup Google Maps dan location services
-    - Konfigurasi Google Maps API key
-    - Setup geolocator untuk GPS access
-    - Implementasi permission handling untuk location
+  - [ ] 12.1 Setup location services dan deep link launcher
+    - Setup geolocator untuk mendapatkan GPS coordinates
+    - Setup url_launcher untuk membuka deep link
+    - Implementasi permission handling untuk location access
+    - Konfigurasi AndroidManifest.xml dan Info.plist untuk location permissions
     - _Requirements: 8.1, 8.2, 8.7_
 
-  - [ ] 12.2 Implementasi pencarian fasilitas kesehatan
-    - Buat LBSProvider untuk manage location data
-    - Implementasi Google Places API untuk search facilities
-    - Buat UI maps dengan markers dan filtering
+  - [ ] 12.2 Implementasi deep link launcher untuk Google Maps eksternal
+    - Buat LocationService untuk mendapatkan GPS coordinates pengguna
+    - Buat MapsLauncherService untuk membuat deep link URL Google Maps
+    - Buat LBSProvider untuk state management lokasi dan error handling
+    - Implementasi UI dengan 4 kategori fasilitas (Rumah Sakit, Puskesmas, Posyandu, Apotek) dalam grid cards
+    - Implementasi logic untuk membuka Google Maps app atau fallback ke browser
     - _Requirements: 8.3, 8.4, 8.5, 8.6_
 
   - [ ] 12.3 Write integration tests untuk LBS functionality
-    - Test location permission handling
-    - Test facility search dan filtering
+    - Test location permission handling dan error scenarios
+    - Test deep link URL formatting untuk berbagai kategori
+    - Test fallback behavior (Maps app vs browser)
     - _Requirements: 8.1-8.7_
 
 - [ ] 13. Implementasi AI Chatbot (TanyaBunda)

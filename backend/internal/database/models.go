@@ -64,16 +64,20 @@ type DiaryEntry struct {
 	Fat            float64    `gorm:"type:decimal(5,2);not null" json:"fat"`
 	EntryDate      time.Time  `gorm:"type:date;not null" json:"entry_date"`
 	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+	DeletedAt      *time.Time `gorm:"index" json:"deleted_at,omitempty"` // Soft delete for sync
 }
 
 // FavoriteRecipe represents a user's favorite recipe
 type FavoriteRecipe struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	UserID    uuid.UUID `gorm:"type:uuid;not null" json:"user_id"`
-	User      User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
-	RecipeID  uuid.UUID `gorm:"type:uuid;not null" json:"recipe_id"`
-	Recipe    Recipe    `gorm:"foreignKey:RecipeID;constraint:OnDelete:CASCADE" json:"recipe,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        uuid.UUID  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	UserID    uuid.UUID  `gorm:"type:uuid;not null" json:"user_id"`
+	User      User       `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
+	RecipeID  uuid.UUID  `gorm:"type:uuid;not null" json:"recipe_id"`
+	Recipe    Recipe     `gorm:"foreignKey:RecipeID;constraint:OnDelete:CASCADE" json:"recipe,omitempty"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `gorm:"index" json:"deleted_at,omitempty"` // Soft delete for sync
 }
 
 // QuizQuestion represents a quiz question

@@ -25,7 +25,7 @@ NutriBunda adalah aplikasi mobile Flutter yang berfungsi sebagai asisten pendamp
 - **TDEE**: Total Daily Energy Expenditure, total kalori yang dibutuhkan tubuh per hari berdasarkan BMR dan tingkat aktivitas fisik.
 - **Pedometer_Service**: Komponen Flutter yang membaca data langkah kaki dari sensor perangkat.
 - **Accelerometer_Service**: Komponen Flutter yang membaca data akselerometer dari sensor perangkat.
-- **LBS_Service**: Komponen Location-Based Service yang menggunakan GPS dan Google Maps API untuk mencari fasilitas kesehatan terdekat.
+- **LBS_Service**: Komponen Location-Based Service yang menggunakan GPS untuk mendapatkan lokasi pengguna dan membuka Google Maps eksternal melalui deep link untuk pencarian fasilitas kesehatan terdekat.
 - **TanyaBunda_AI**: Fitur chatbot berbasis LLM (Gemini API) sebagai konsultan gizi dan validator mitos/fakta MPASI.
 - **Notification_Service**: Komponen yang mengelola pengiriman notifikasi lokal menggunakan flutter_local_notifications.
 - **Quiz_Game**: Fitur mini game trivia "Kuis Gizi Bunda" untuk edukasi gizi.
@@ -151,10 +151,10 @@ NutriBunda adalah aplikasi mobile Flutter yang berfungsi sebagai asisten pendamp
 
 1. WHEN pengguna membuka fitur LBS, THE LBS_Service SHALL meminta izin akses lokasi perangkat kepada pengguna.
 2. WHEN izin lokasi diberikan, THE LBS_Service SHALL mendapatkan koordinat GPS pengguna saat ini menggunakan paket geolocator.
-3. WHEN koordinat GPS tersedia, THE LBS_Service SHALL menampilkan peta interaktif menggunakan Google Maps API yang berpusat pada lokasi pengguna.
-4. THE LBS_Service SHALL memungkinkan pengguna memfilter pencarian fasilitas berdasarkan kategori: Rumah Sakit, Puskesmas, Posyandu, dan Apotek.
-5. WHEN pengguna memilih kategori fasilitas, THE LBS_Service SHALL menampilkan penanda (marker) lokasi fasilitas yang relevan di peta dalam radius 5 kilometer dari posisi pengguna.
-6. WHEN pengguna menekan penanda fasilitas di peta, THE LBS_Service SHALL menampilkan informasi detail fasilitas yang mencakup: nama, alamat, dan jarak dari lokasi pengguna.
+3. THE LBS_Service SHALL menampilkan antarmuka pemilihan kategori fasilitas kesehatan yang mencakup: Rumah Sakit, Puskesmas, Posyandu, dan Apotek.
+4. WHEN pengguna memilih salah satu kategori fasilitas, THE LBS_Service SHALL membuka aplikasi Google Maps eksternal menggunakan deep link dengan query pencarian untuk kategori yang dipilih di sekitar lokasi GPS pengguna.
+5. THE LBS_Service SHALL memformat deep link Google Maps dengan parameter: koordinat GPS pengguna dan query pencarian kategori fasilitas yang dipilih.
+6. IF aplikasi Google Maps tidak terinstal di perangkat, THEN THE LBS_Service SHALL membuka Google Maps melalui browser web dengan parameter pencarian yang sama.
 7. IF izin lokasi ditolak oleh pengguna, THEN THE LBS_Service SHALL menampilkan pesan yang menjelaskan bahwa izin lokasi diperlukan untuk menggunakan fitur ini dan mengarahkan pengguna ke pengaturan perangkat.
 
 ---

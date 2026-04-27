@@ -12,7 +12,7 @@ Dokumen ini menjelaskan desain teknis aplikasi NutriBunda, sebuah aplikasi mobil
 - **Local Storage**: SQLite (sqflite), flutter_secure_storage
 - **Authentication**: local_auth (biometric)
 - **Sensors**: sensors_plus (accelerometer), pedometer
-- **Maps**: google_maps_flutter, geolocator
+- **Location**: geolocator, url_launcher
 - **Notifications**: flutter_local_notifications
 - **HTTP Client**: dio/http
 
@@ -20,7 +20,7 @@ Dokumen ini menjelaskan desain teknis aplikasi NutriBunda, sebuah aplikasi mobil
 - **Framework**: Gin/Echo
 - **Database**: PostgreSQL dengan GORM
 - **Authentication**: JWT dengan bcrypt
-- **External APIs**: Gemini API, Google Maps Places API
+- **External APIs**: Gemini API
 
 ### Database
 - **Server**: PostgreSQL 14+
@@ -73,6 +73,35 @@ lib/
 │   ├── widgets/
 │   └── themes/
 └── injection_container.dart
+```
+
+### Dependencies Utama
+
+```yaml
+dependencies:
+  # State Management
+  provider: ^6.0.0
+  
+  # HTTP & API
+  dio: ^5.0.0
+  
+  # Local Storage
+  sqflite: ^2.0.0
+  flutter_secure_storage: ^9.0.0
+  
+  # Authentication
+  local_auth: ^2.1.0
+  
+  # Sensors
+  sensors_plus: ^3.0.0
+  pedometer: ^4.0.0
+  
+  # Location & Maps
+  geolocator: ^10.0.0
+  url_launcher: ^6.2.0
+  
+  # Notifications
+  flutter_local_notifications: ^16.0.0
 ```
 
 ---
@@ -512,6 +541,563 @@ class PedometerService {
 
 ---
 
+## Desain Location-Based Service (LBS)
+
+### Arsitektur LBS
+
+LBS menggunakan pendekatan sederhana dengan memanfaatkan aplikasi Google Maps eksternal melalui deep link. Tidak ada integrasi langsung dengan Google Maps API.
+
+```mermaid
+graph LR
+    A[User memilih kategori] --> B[Geolocator mendapat GPS]
+    B --> C[Buat Deep Link URL]
+    C --> D{Google Maps<br/>terinstall?}
+    D -->|Ya| E[Buka Google Maps App]
+    D -->|Tidak| F[Buka di Browser]
+```
+
+### Komponen LBS
+
+#### 1. LocationService - Mendapatkan GPS Coordinates
+
+```dart
+import 'package:geolocator/geolocator.dart';
+
+class LocationService {
+  /// Memeriksa dan meminta izin lokasi
+  Future<bool> requestLocationPermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return false;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Mendapatkan koordinat GPS pengguna saat ini
+  Future<Position?> getCurrentLocation() async {
+    try {
+      bool hasPermission = await requestLocationPermission();
+      if (!hasPermission) {
+        return null;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: Duration(seconds: 10),
+      );
+
+      return position;
+    } catch (e) {
+      print('Error getting location: $e');
+      return null;
+    }
+  }
+}
+```
+
+#### 2. MapsLauncherService - Membuat dan Membuka Deep Link
+
+```dart
+import 'package:url_launcher/url_launcher.dart';
+
+class MapsLauncherService {
+  /// Kategori fasilitas kesehatan yang didukung
+  static const Map<String, String> facilityCategories = {
+    'Rumah Sakit': 'hospital',
+    'Puskesmas': 'puskesmas',
+    'Posyandu': 'posyandu',
+    'Apotek': 'pharmacy',
+  };
+
+  /// Membuat deep link URL untuk Google Maps
+  String createMapsSearchUrl({
+    required double latitude,
+    required double longitude,
+    required String category,
+  }) {
+    // Format: https://www.google.com/maps/search/?api=1&query={category}+near+{lat},{lng}
+    final query = Uri.encodeComponent('$category near $latitude,$longitude');
+    return 'https://www.google.com/maps/search/?api=1&query=$query';
+  }
+
+  /// Membuka Google Maps dengan query pencarian
+  Future<bool> openMapsSearch({
+    required double latitude,
+    required double longitude,
+    required String categoryKey,
+  }) async {
+    try {
+      // Dapatkan nama kategori dalam bahasa Indonesia
+      final category = facilityCategories[categoryKey] ?? categoryKey;
+      
+      // Buat URL deep link
+      final url = createMapsSearchUrl(
+        latitude: latitude,
+        longitude: longitude,
+        category: category,
+      );
+
+      final uri = Uri.parse(url);
+
+      // Coba buka dengan Google Maps app terlebih dahulu
+      final googleMapsUri = Uri.parse(
+        'comgooglemaps://?q=$category&center=$latitude,$longitude'
+      );
+
+      if (await canLaunchUrl(googleMapsUri)) {
+        // Buka di Google Maps app
+        await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
+        return true;
+      } else {
+        // Fallback: buka di browser
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return true;
+        }
+      }
+
+      return false;
+    } catch (e) {
+      print('Error launching maps: $e');
+      return false;
+    }
+  }
+}
+```
+
+#### 3. LBSProvider - State Management
+
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
+
+class LBSProvider extends ChangeNotifier {
+  final LocationService _locationService = LocationService();
+  final MapsLauncherService _mapsLauncher = MapsLauncherService();
+
+  Position? _currentPosition;
+  bool _isLoadingLocation = false;
+  String? _errorMessage;
+
+  Position? get currentPosition => _currentPosition;
+  bool get isLoadingLocation => _isLoadingLocation;
+  String? get errorMessage => _errorMessage;
+
+  /// Mendapatkan lokasi pengguna saat ini
+  Future<void> fetchCurrentLocation() async {
+    _isLoadingLocation = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final position = await _locationService.getCurrentLocation();
+      
+      if (position != null) {
+        _currentPosition = position;
+      } else {
+        _errorMessage = 'Tidak dapat mengakses lokasi. Pastikan izin lokasi telah diberikan.';
+      }
+    } catch (e) {
+      _errorMessage = 'Terjadi kesalahan saat mengambil lokasi: $e';
+    } finally {
+      _isLoadingLocation = false;
+      notifyListeners();
+    }
+  }
+
+  /// Membuka pencarian fasilitas di Google Maps
+  Future<bool> searchFacility(String categoryKey) async {
+    if (_currentPosition == null) {
+      _errorMessage = 'Lokasi belum tersedia. Silakan coba lagi.';
+      notifyListeners();
+      return false;
+    }
+
+    try {
+      final success = await _mapsLauncher.openMapsSearch(
+        latitude: _currentPosition!.latitude,
+        longitude: _currentPosition!.longitude,
+        categoryKey: categoryKey,
+      );
+
+      if (!success) {
+        _errorMessage = 'Tidak dapat membuka Google Maps. Pastikan aplikasi terinstall atau browser tersedia.';
+        notifyListeners();
+      }
+
+      return success;
+    } catch (e) {
+      _errorMessage = 'Terjadi kesalahan: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+}
+```
+
+#### 4. LBS UI Screen
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class LBSScreen extends StatefulWidget {
+  @override
+  _LBSScreenState createState() => _LBSScreenState();
+}
+
+class _LBSScreenState extends State<LBSScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Ambil lokasi saat screen dibuka
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LBSProvider>().fetchCurrentLocation();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cari Fasilitas Kesehatan'),
+      ),
+      body: Consumer<LBSProvider>(
+        builder: (context, lbsProvider, child) {
+          if (lbsProvider.isLoadingLocation) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Mendapatkan lokasi Anda...'),
+                ],
+              ),
+            );
+          }
+
+          if (lbsProvider.errorMessage != null) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text(
+                      lbsProvider.errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        lbsProvider.fetchCurrentLocation();
+                      },
+                      icon: Icon(Icons.refresh),
+                      label: Text('Coba Lagi'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          if (lbsProvider.currentPosition == null) {
+            return Center(
+              child: Text('Lokasi tidak tersedia'),
+            );
+          }
+
+          return _buildFacilityCategories(context, lbsProvider);
+        },
+      ),
+    );
+  }
+
+  Widget _buildFacilityCategories(BuildContext context, LBSProvider provider) {
+    final categories = [
+      {
+        'key': 'Rumah Sakit',
+        'icon': Icons.local_hospital,
+        'color': Colors.red,
+      },
+      {
+        'key': 'Puskesmas',
+        'icon': Icons.medical_services,
+        'color': Colors.blue,
+      },
+      {
+        'key': 'Posyandu',
+        'icon': Icons.child_care,
+        'color': Colors.green,
+      },
+      {
+        'key': 'Apotek',
+        'icon': Icons.medication,
+        'color': Colors.orange,
+      },
+    ];
+
+    return Padding(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on, color: Colors.green),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Lokasi Anda',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Text(
+                          '${provider.currentPosition!.latitude.toStringAsFixed(6)}, ${provider.currentPosition!.longitude.toStringAsFixed(6)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Pilih Fasilitas Kesehatan',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 16),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.2,
+              ),
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final category = categories[index];
+                return _buildCategoryCard(
+                  context,
+                  provider,
+                  category['key'] as String,
+                  category['icon'] as IconData,
+                  category['color'] as Color,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(
+    BuildContext context,
+    LBSProvider provider,
+    String categoryKey,
+    IconData icon,
+    Color color,
+  ) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: () async {
+          final success = await provider.searchFacility(categoryKey);
+          if (!success && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(provider.errorMessage ?? 'Gagal membuka Google Maps'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 48,
+              color: color,
+            ),
+            SizedBox(height: 12),
+            Text(
+              categoryKey,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Konfigurasi Platform
+
+#### Android (AndroidManifest.xml)
+
+```xml
+<manifest>
+    <!-- Izin lokasi -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <!-- Query untuk memeriksa Google Maps terinstall -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+</manifest>
+```
+
+#### iOS (Info.plist)
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>NutriBunda memerlukan akses lokasi untuk menemukan fasilitas kesehatan terdekat</string>
+
+<key>NSLocationAlwaysUsageDescription</key>
+<string>NutriBunda memerlukan akses lokasi untuk menemukan fasilitas kesehatan terdekat</string>
+
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>comgooglemaps</string>
+    <string>https</string>
+</array>
+```
+
+### Error Handling
+
+```dart
+class LBSException implements Exception {
+  final String message;
+  final LBSErrorType type;
+
+  LBSException(this.message, this.type);
+
+  @override
+  String toString() => message;
+}
+
+enum LBSErrorType {
+  locationPermissionDenied,
+  locationServiceDisabled,
+  locationTimeout,
+  mapsNotAvailable,
+  unknown,
+}
+
+class LBSErrorHandler {
+  static String getErrorMessage(LBSException error) {
+    switch (error.type) {
+      case LBSErrorType.locationPermissionDenied:
+        return 'Izin lokasi diperlukan untuk menggunakan fitur ini. Silakan aktifkan di pengaturan.';
+      case LBSErrorType.locationServiceDisabled:
+        return 'Layanan lokasi tidak aktif. Silakan aktifkan GPS di pengaturan perangkat.';
+      case LBSErrorType.locationTimeout:
+        return 'Gagal mendapatkan lokasi. Pastikan Anda berada di area dengan sinyal GPS yang baik.';
+      case LBSErrorType.mapsNotAvailable:
+        return 'Google Maps tidak tersedia. Pastikan aplikasi terinstall atau browser tersedia.';
+      default:
+        return 'Terjadi kesalahan yang tidak diketahui.';
+    }
+  }
+}
+```
+
+### Testing Strategy untuk LBS
+
+#### Unit Tests
+
+```dart
+void main() {
+  group('MapsLauncherService', () {
+    late MapsLauncherService service;
+
+    setUp(() {
+      service = MapsLauncherService();
+    });
+
+    test('createMapsSearchUrl should format URL correctly', () {
+      final url = service.createMapsSearchUrl(
+        latitude: -6.2088,
+        longitude: 106.8456,
+        category: 'hospital',
+      );
+
+      expect(url, contains('https://www.google.com/maps/search/'));
+      expect(url, contains('api=1'));
+      expect(url, contains('query='));
+      expect(url, contains('hospital'));
+      expect(url, contains('-6.2088'));
+      expect(url, contains('106.8456'));
+    });
+
+    test('facilityCategories should contain all required categories', () {
+      expect(MapsLauncherService.facilityCategories, containsPair('Rumah Sakit', 'hospital'));
+      expect(MapsLauncherService.facilityCategories, containsPair('Puskesmas', 'puskesmas'));
+      expect(MapsLauncherService.facilityCategories, containsPair('Posyandu', 'posyandu'));
+      expect(MapsLauncherService.facilityCategories, containsPair('Apotek', 'pharmacy'));
+    });
+  });
+
+  group('LocationService', () {
+    // Mock tests untuk location service
+    test('requestLocationPermission should return false when service disabled', () async {
+      // Test implementation dengan mock
+    });
+  });
+}
+```
+
+---
+
 ## Desain Integrasi Eksternal
 
 ### Gemini API Integration
@@ -550,45 +1136,6 @@ class GeminiService {
     );
     
     return response.data['candidates'][0]['content']['parts'][0]['text'];
-  }
-}
-```
-
-### Google Maps Places API
-
-```dart
-class PlacesService {
-  static const String API_KEY = 'your_google_maps_api_key';
-  
-  Future<List<HealthFacility>> searchNearbyFacilities(
-    LatLng location, 
-    String category
-  ) async {
-    String placeType = _mapCategoryToPlaceType(category);
-    
-    final response = await dio.get(
-      'https://maps.googleapis.com/maps/api/place/nearbysearch/json',
-      queryParameters: {
-        'location': '${location.latitude},${location.longitude}',
-        'radius': '5000',
-        'type': placeType,
-        'key': API_KEY,
-      },
-    );
-    
-    return (response.data['results'] as List)
-        .map((json) => HealthFacility.fromJson(json))
-        .toList();
-  }
-  
-  String _mapCategoryToPlaceType(String category) {
-    switch (category) {
-      case 'Rumah Sakit': return 'hospital';
-      case 'Puskesmas': return 'health';
-      case 'Posyandu': return 'health';
-      case 'Apotek': return 'pharmacy';
-      default: return 'health';
-    }
   }
 }
 ```
