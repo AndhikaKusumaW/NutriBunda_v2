@@ -111,7 +111,7 @@ Implementasi dibagi menjadi 6 fase utama:
 
 ### Fase 3: Frontend Core Development
 
-- [ ] 5. Setup state management dan arsitektur Flutter
+- [x] 5. Setup state management dan arsitektur Flutter
   - [x] 5.1 Implementasi Provider pattern dan dependency injection
     - Setup GetIt untuk dependency injection
     - Buat base providers untuk state management
@@ -124,7 +124,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Implementasi automatic token refresh
     - _Requirements: 1.4, 1.6_
 
-  - [ ] 5.3 Write unit tests untuk core services
+  - [x] 5.3 Write unit tests untuk core services
     - Test secure storage functionality
     - Test HTTP client dengan mock responses
     - _Requirements: 1.4, 1.7_
