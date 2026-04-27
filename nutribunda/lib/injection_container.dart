@@ -6,6 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Core Services
 import 'core/services/secure_storage_service.dart';
 import 'core/services/http_client_service.dart';
+import 'core/services/biometric_service.dart';
+
+// Providers
+import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/food_diary_provider.dart';
 
 /// Service Locator instance
 /// Digunakan untuk dependency injection di seluruh aplikasi
@@ -50,6 +55,12 @@ Future<void> init() async {
     () => HttpClientService(secureStorage: sl()),
   );
   
+  // Biometric Service - untuk autentikasi biometrik
+  // Requirements: 2.1, 2.2, 2.3, 2.4, 2.5
+  sl.registerLazySingleton<BiometricService>(
+    () => BiometricService(secureStorage: sl()),
+  );
+  
   // HTTP Client (Dio) - raw instance untuk custom usage
   sl.registerLazySingleton<Dio>(() {
     final dio = Dio(
@@ -84,12 +95,17 @@ Future<void> init() async {
   // Menggunakan registerFactory untuk providers agar setiap kali diakses
   // akan membuat instance baru
   
-  // Contoh:
-  // sl.registerFactory(() => AuthProvider(
-  //   loginUseCase: sl(),
-  //   logoutUseCase: sl(),
-  //   secureStorage: sl(),
-  // ));
+  // Auth Provider - Requirements: 1.1, 1.5, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5
+  sl.registerFactory(() => AuthProvider(
+    httpClient: sl(),
+    secureStorage: sl(),
+    biometricService: sl(),
+  ));
+  
+  // Food Diary Provider - Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
+  sl.registerFactory(() => FoodDiaryProvider(
+    httpClient: sl(),
+  ));
   
   // ============================================================================
   // USE CASES - Business Logic

@@ -130,19 +130,19 @@ Implementasi dibagi menjadi 6 fase utama:
     - _Requirements: 1.4, 1.7_
 
 - [ ] 6. Implementasi autentikasi Flutter
-  - [ ] 6.1 Buat AuthProvider dan login/register screens
+  - [x] 6.1 Buat AuthProvider dan login/register screens
     - Implementasi AuthProvider dengan login/register methods
     - Buat UI untuk login dan registrasi
     - Implementasi form validation dan error handling
     - _Requirements: 1.1, 1.5, 1.7_
 
-  - [ ] 6.2 Implementasi biometric authentication
+  - [x] 6.2 Implementasi biometric authentication
     - Setup local_auth untuk sidik jari dan Face ID
     - Implementasi BiometricService dengan fallback
     - Buat UI untuk enable/disable biometric auth
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-  - [ ] 6.3 Write integration tests untuk authentication flow
+  - [x] 6.3 Write integration tests untuk authentication flow
     - Test complete login/logout flow
     - Test biometric authentication scenarios
     - _Requirements: 1.1-1.7, 2.1-2.5_
@@ -150,7 +150,7 @@ Implementasi dibagi menjadi 6 fase utama:
 ### Fase 4: Implementasi Fitur Utama
 
 - [ ] 7. Implementasi Food Diary dan Nutrition Tracking
-  - [ ] 7.1 Buat FoodDiaryProvider dan UI screens
+  - [x] 7.1 Buat FoodDiaryProvider dan UI screens
     - Implementasi FoodDiaryProvider dengan dual profile support
     - Buat UI untuk pencatatan makanan bayi dan ibu
     - Implementasi food search dengan autocomplete

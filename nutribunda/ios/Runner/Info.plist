@@ -66,5 +66,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSFaceIDUsageDescription</key>
+	<string>NutriBunda memerlukan akses Face ID untuk autentikasi biometrik yang aman dan cepat</string>
 </dict>
 </plist>
