@@ -89,7 +89,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat endpoint random recipe untuk shake-to-recipe
     - _Requirements: 6.3, 7.1, 7.2, 7.3_
 
-  - [ ]* 3.3 Write property test untuk Food Database
+  - [ ] 3.3 Write property test untuk Food Database
     - **Property 2: Nutrition calculation consistency**
     - **Validates: Requirements 3.1, 4.3**
 
@@ -105,7 +105,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Implementasi conflict resolution untuk data sync
     - _Requirements: 3.4, 3.5, 7.4_
 
-  - [ ]* 4.3 Write property test untuk Nutrition Tracking
+  - [ ] 4.3 Write property test untuk Nutrition Tracking
     - **Property 3: Nutrition tracking consistency**
     - **Validates: Requirements 4.3, 4.5**
 
@@ -124,7 +124,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Implementasi automatic token refresh
     - _Requirements: 1.4, 1.6_
 
-  - [ ]* 5.3 Write unit tests untuk core services
+  - [ ] 5.3 Write unit tests untuk core services
     - Test secure storage functionality
     - Test HTTP client dengan mock responses
     - _Requirements: 1.4, 1.7_
@@ -142,7 +142,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat UI untuk enable/disable biometric auth
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-  - [ ]* 6.3 Write integration tests untuk authentication flow
+  - [ ] 6.3 Write integration tests untuk authentication flow
     - Test complete login/logout flow
     - Test biometric authentication scenarios
     - _Requirements: 1.1-1.7, 2.1-2.5_
@@ -162,7 +162,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat dashboard dengan ringkasan nutrisi
     - _Requirements: 4.3, 4.6, 13.2_
 
-  - [ ]* 7.3 Write property test untuk nutrition calculations
+  - [ ] 7.3 Write property test untuk nutrition calculations
     - **Property 4: Add/remove entry consistency**
     - **Validates: Requirements 4.3, 4.5**
 
@@ -179,7 +179,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat dashboard diet plan dengan ringkasan harian
     - _Requirements: 5.8, 5.9, 5.10, 5.11_
 
-  - [ ]* 8.3 Write property test untuk BMR/TDEE calculations
+  - [ ] 8.3 Write property test untuk BMR/TDEE calculations
     - **Property 5: BMR calculation accuracy**
     - **Property 6: Calorie deficit safety**
     - **Validates: Requirements 5.1, 5.2, 5.3**
@@ -202,7 +202,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Integrasi dengan random recipe selection
     - _Requirements: 6.1, 6.2, 6.3, 6.6_
 
-  - [ ]* 10.3 Write property test untuk sensor services
+  - [ ] 10.3 Write property test untuk sensor services
     - **Property 7: Shake detection debounce**
     - **Validates: Requirements 6.6**
 
@@ -219,7 +219,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat screen untuk daftar resep favorit
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-  - [ ]* 11.3 Write unit tests untuk recipe management
+  - [ ] 11.3 Write unit tests untuk recipe management
     - Test recipe favorit functionality
     - Test shake-to-recipe integration
     - _Requirements: 6.3-6.6, 7.1-7.4_
@@ -239,7 +239,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat UI maps dengan markers dan filtering
     - _Requirements: 8.3, 8.4, 8.5, 8.6_
 
-  - [ ]* 12.3 Write integration tests untuk LBS functionality
+  - [ ] 12.3 Write integration tests untuk LBS functionality
     - Test location permission handling
     - Test facility search dan filtering
     - _Requirements: 8.1-8.7_
@@ -257,7 +257,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Implementasi typing indicators dan loading states
     - _Requirements: 9.3, 9.5, 9.6_
 
-  - [ ]* 13.3 Write unit tests untuk chatbot functionality
+  - [ ] 13.3 Write unit tests untuk chatbot functionality
     - Test Gemini API integration
     - Test conversation history management
     - _Requirements: 9.1-9.6_
@@ -275,7 +275,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat UI untuk manage notification settings
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6_
 
-  - [ ]* 14.3 Write unit tests untuk quiz dan notifications
+  - [ ] 14.3 Write unit tests untuk quiz dan notifications
     - Test quiz scoring dan randomization
     - Test notification scheduling dengan timezone
     - _Requirements: 10.1-10.7, 11.1-11.6_
@@ -295,7 +295,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat settings screen dengan logout functionality
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 13.5_
 
-  - [ ]* 15.3 Write UI tests untuk navigation flow
+  - [ ] 15.3 Write UI tests untuk navigation flow
     - Test bottom navigation functionality
     - Test profile management screens
     - _Requirements: 12.1-12.5, 13.1-13.6_
@@ -315,7 +315,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat background sync dengan connectivity monitoring
     - _Requirements: 3.5, 4.1, 7.4_
 
-  - [ ]* 16.3 Write property test untuk data synchronization
+  - [ ] 16.3 Write property test untuk data synchronization
     - **Property 8: Sync consistency**
     - **Validates: Requirements 3.4, 3.5**
 
@@ -337,7 +337,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Memory leak detection dan fixes
     - _Requirements: 3.2, 12.3_
 
-  - [ ]* 18.3 Write property-based tests untuk critical paths
+  - [ ] 18.3 Write property-based tests untuk critical paths
     - **Property 9: Data integrity across offline/online states**
     - **Property 10: Memory usage bounds**
     - **Validates: Requirements 3.3-3.5, 4.1-4.6**
@@ -355,7 +355,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Production configuration dan environment setup
     - _Requirements: 1.1-1.7, 2.1-2.5_
 
-  - [ ]* 19.3 Write security tests dan penetration testing
+  - [ ] 19.3 Write security tests dan penetration testing
     - Test authentication security
     - Test data encryption dan secure storage
     - _Requirements: 1.1-1.7, 2.1-2.5_
