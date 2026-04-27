@@ -11,42 +11,42 @@ abstract class Failure extends Equatable {
 
 // General failures
 class ServerFailure extends Failure {
-  const ServerFailure(super.message);
+  const ServerFailure({String message = 'Server error occurred'}) : super(message);
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure(super.message);
+  const CacheFailure({String message = 'Cache error occurred'}) : super(message);
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure(super.message);
+  const NetworkFailure({String message = 'Network error occurred'}) : super(message);
 }
 
 // Auth failures
 class AuthenticationFailure extends Failure {
-  const AuthenticationFailure(super.message);
+  const AuthenticationFailure({String message = 'Authentication failed'}) : super(message);
 }
 
 class UnauthorizedFailure extends Failure {
-  const UnauthorizedFailure(super.message);
+  const UnauthorizedFailure({String message = 'Unauthorized access'}) : super(message);
 }
 
 // Validation failures
 class ValidationFailure extends Failure {
-  const ValidationFailure(super.message);
+  const ValidationFailure({String message = 'Validation failed'}) : super(message);
 }
 
 // Biometric failures
 class BiometricFailure extends Failure {
-  const BiometricFailure(super.message);
+  const BiometricFailure({String message = 'Biometric authentication failed'}) : super(message);
 }
 
 // Sensor failures
 class SensorFailure extends Failure {
-  const SensorFailure(super.message);
+  const SensorFailure({String message = 'Sensor error occurred'}) : super(message);
 }
 
 // Location failures
 class LocationFailure extends Failure {
-  const LocationFailure(super.message);
+  const LocationFailure({String message = 'Location error occurred'}) : super(message);
 }

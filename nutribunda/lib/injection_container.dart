@@ -1,31 +1,152 @@
 import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+// Core Services
+import 'core/services/secure_storage_service.dart';
+import 'core/services/http_client_service.dart';
+
+/// Service Locator instance
+/// Digunakan untuk dependency injection di seluruh aplikasi
 final sl = GetIt.instance;
 
+/// Initialize semua dependencies
+/// Harus dipanggil di main() sebelum runApp()
 Future<void> init() async {
-  // TODO: Register dependencies here
-  // This will be populated as we implement features
+  // ============================================================================
+  // CORE - External Dependencies
+  // ============================================================================
   
-  // Example structure:
-  // // Providers
-  // sl.registerFactory(() => AuthProvider(authUseCase: sl()));
+  // Secure Storage untuk JWT dan sensitive data
+  sl.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(
+      aOptions: AndroidOptions(
+        encryptedSharedPreferences: true,
+      ),
+      iOptions: IOSOptions(
+        accessibility: KeychainAccessibility.first_unlock,
+      ),
+    ),
+  );
   
-  // // Use Cases
+  // Shared Preferences untuk non-sensitive data
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
+  
+  // ============================================================================
+  // CORE SERVICES
+  // ============================================================================
+  
+  // Secure Storage Service - untuk mengelola JWT dan data terenkripsi
+  // Requirements: 1.4, 1.6, 1.7
+  sl.registerLazySingleton<SecureStorageService>(
+    () => SecureStorageService(secureStorage: sl()),
+  );
+  
+  // HTTP Client Service - untuk komunikasi dengan backend API
+  // Requirements: 1.4, 1.6
+  sl.registerLazySingleton<HttpClientService>(
+    () => HttpClientService(secureStorage: sl()),
+  );
+  
+  // HTTP Client (Dio) - raw instance untuk custom usage
+  sl.registerLazySingleton<Dio>(() {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+    
+    // Add interceptors untuk logging dan error handling
+    dio.interceptors.add(
+      LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        error: true,
+      ),
+    );
+    
+    return dio;
+  });
+  
+  // ============================================================================
+  // PROVIDERS - State Management
+  // ============================================================================
+  
+  // Providers akan didaftarkan di sini saat implementasi fitur
+  // Menggunakan registerFactory untuk providers agar setiap kali diakses
+  // akan membuat instance baru
+  
+  // Contoh:
+  // sl.registerFactory(() => AuthProvider(
+  //   loginUseCase: sl(),
+  //   logoutUseCase: sl(),
+  //   secureStorage: sl(),
+  // ));
+  
+  // ============================================================================
+  // USE CASES - Business Logic
+  // ============================================================================
+  
+  // Use cases akan didaftarkan di sini saat implementasi fitur
+  // Menggunakan registerLazySingleton karena use cases stateless
+  
+  // Contoh:
   // sl.registerLazySingleton(() => LoginUseCase(repository: sl()));
   
-  // // Repositories
+  // ============================================================================
+  // REPOSITORIES - Data Layer
+  // ============================================================================
+  
+  // Repositories akan didaftarkan di sini saat implementasi fitur
+  // Menggunakan registerLazySingleton untuk repositories
+  
+  // Contoh:
   // sl.registerLazySingleton<AuthRepository>(
   //   () => AuthRepositoryImpl(
   //     remoteDataSource: sl(),
   //     localDataSource: sl(),
+  //     networkInfo: sl(),
   //   ),
   // );
   
-  // // Data Sources
+  // ============================================================================
+  // DATA SOURCES - Remote & Local
+  // ============================================================================
+  
+  // Data sources akan didaftarkan di sini saat implementasi fitur
+  
+  // Contoh:
   // sl.registerLazySingleton<AuthRemoteDataSource>(
   //   () => AuthRemoteDataSourceImpl(client: sl()),
   // );
+  // 
+  // sl.registerLazySingleton<AuthLocalDataSource>(
+  //   () => AuthLocalDataSourceImpl(secureStorage: sl()),
+  // );
   
-  // // Core
-  // sl.registerLazySingleton(() => Dio());
+  // ============================================================================
+  // SERVICES - Platform & External Services
+  // ============================================================================
+  
+  // Services akan didaftarkan di sini saat implementasi fitur
+  
+  // Contoh:
+  // sl.registerLazySingleton(() => BiometricService());
+  // sl.registerLazySingleton(() => PedometerService());
+  // sl.registerLazySingleton(() => AccelerometerService());
+  // sl.registerLazySingleton(() => LocationService());
+  // sl.registerLazySingleton(() => NotificationService());
+}
+
+/// Reset semua dependencies (untuk testing)
+Future<void> reset() async {
+  await sl.reset();
 }
