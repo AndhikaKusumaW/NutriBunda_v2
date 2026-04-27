@@ -1,0 +1,10 @@
+# Build configuration for code generation
+targets:
+  $default:
+    builders:
+      mockito|mockBuilder:
+        generate_for:
+          - test/**_test.dart
+        options:
+          # Generate mocks for classes annotated with @GenerateMocks
+          # Mocks will be generated in .mocks.dart files

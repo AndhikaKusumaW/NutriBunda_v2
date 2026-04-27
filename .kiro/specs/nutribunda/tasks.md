@@ -20,34 +20,34 @@ Implementasi dibagi menjadi 6 fase utama:
 
 ### Fase 1: Setup Proyek dan Infrastruktur
 
-- [ ] 1. Setup struktur proyek dan konfigurasi dasar
-  - [ ] 1.1 Inisialisasi proyek Flutter dengan struktur clean architecture
+- [x] 1. Setup struktur proyek dan konfigurasi dasar
+  - [x] 1.1 Inisialisasi proyek Flutter dengan struktur clean architecture
     - Buat proyek Flutter baru dengan nama `nutribunda`
     - Setup struktur folder: `lib/core/`, `lib/data/`, `lib/domain/`, `lib/presentation/`
     - Konfigurasi `pubspec.yaml` dengan dependencies utama
     - _Requirements: 13.1, 13.2_
 
-  - [ ] 1.2 Setup proyek backend Golang
+  - [x] 1.2 Setup proyek backend Golang
     - Inisialisasi proyek Go dengan struktur modular
     - Setup folder: `cmd/`, `internal/`, `pkg/`, `configs/`
     - Konfigurasi `go.mod` dengan dependencies (Gin, GORM, JWT, bcrypt)
     - _Requirements: 1.2, 1.3_
 
-  - [ ] 1.3 Setup PostgreSQL menggunakan Docker
+  - [x] 1.3 Setup PostgreSQL menggunakan Docker
     - Buat `docker-compose.yml` untuk PostgreSQL container
     - Konfigurasi environment variables untuk database connection
     - Setup volume untuk data persistence
     - Buat script untuk database initialization
     - _Requirements: 3.1, 4.1_
 
-  - [ ] 1.4 Konfigurasi database schema dan migrations
+  - [x] 1.4 Konfigurasi database schema dan migrations
     - Setup schema database dengan 7 tabel utama
     - Buat migration files untuk semua tabel
     - Setup connection pool dan konfigurasi GORM
     - Test koneksi database dari aplikasi Golang
     - _Requirements: 3.1, 4.1_
 
-  - [ ]* 1.5 Setup testing framework untuk backend dan frontend
+  - [x] 1.5 Setup testing framework untuk backend dan frontend
     - Konfigurasi testing untuk Go (testify)
     - Konfigurasi testing untuk Flutter (flutter_test, mockito)
     - _Requirements: Semua_
