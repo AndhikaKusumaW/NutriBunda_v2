@@ -129,7 +129,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Test HTTP client dengan mock responses
     - _Requirements: 1.4, 1.7_
 
-- [ ] 6. Implementasi autentikasi Flutter
+- [x] 6. Implementasi autentikasi Flutter
   - [x] 6.1 Buat AuthProvider dan login/register screens
     - Implementasi AuthProvider dengan login/register methods
     - Buat UI untuk login dan registrasi
@@ -149,20 +149,20 @@ Implementasi dibagi menjadi 6 fase utama:
 
 ### Fase 4: Implementasi Fitur Utama
 
-- [ ] 7. Implementasi Food Diary dan Nutrition Tracking
+- [x] 7. Implementasi Food Diary dan Nutrition Tracking
   - [x] 7.1 Buat FoodDiaryProvider dan UI screens
     - Implementasi FoodDiaryProvider dengan dual profile support
     - Buat UI untuk pencatatan makanan bayi dan ibu
     - Implementasi food search dengan autocomplete
     - _Requirements: 4.1, 4.2, 4.4_
 
-  - [ ] 7.2 Implementasi nutrition summary dan visualisasi
+  - [x] 7.2 Implementasi nutrition summary dan visualisasi
     - Buat NutritionTracker untuk kalkulasi harian
     - Implementasi progress bars dan charts untuk nutrisi
     - Buat dashboard dengan ringkasan nutrisi
     - _Requirements: 4.3, 4.6, 13.2_
 
-  - [ ] 7.3 Write property test untuk nutrition calculations
+  - [x] 7.3 Write property test untuk nutrition calculations
     - **Property 4: Add/remove entry consistency**
     - **Validates: Requirements 4.3, 4.5**
 
