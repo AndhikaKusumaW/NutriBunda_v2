@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'injection_container.dart' as di;
+import 'presentation/providers/auth_provider.dart';
+import 'presentation/pages/auth/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,9 +20,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // TODO: Add providers here as they are implemented
-        // Example:
-        // ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
+        ChangeNotifierProvider(
+          create: (_) => di.sl<AuthProvider>()..initializeAuth(),
+        ),
       ],
       child: MaterialApp(
         title: 'NutriBunda',
@@ -32,7 +34,30 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        home: const PlaceholderHomePage(),
+        home: Consumer<AuthProvider>(
+          builder: (context, authProvider, child) {
+            // Show loading while initializing
+            if (authProvider.isLoading) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            // Show login screen if not authenticated
+            if (!authProvider.isAuthenticated) {
+              return const LoginScreen();
+            }
+
+            // Show home screen if authenticated
+            return const PlaceholderHomePage();
+          },
+        ),
+        routes: {
+          '/home': (context) => const PlaceholderHomePage(),
+          '/login': (context) => const LoginScreen(),
+        },
       ),
     );
   }
@@ -43,10 +68,24 @@ class PlaceholderHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('NutriBunda'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await authProvider.logout();
+              if (context.mounted) {
+                Navigator.of(context).pushReplacementNamed('/login');
+              }
+            },
+            tooltip: 'Logout',
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -72,9 +111,41 @@ class PlaceholderHomePage extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 40),
-            const CircularProgressIndicator(),
-            const SizedBox(height: 20),
-            const Text('Initializing...'),
+            if (authProvider.user != null) ...[
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const CircleAvatar(
+                        radius: 40,
+                        child: Icon(Icons.person, size: 40),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Selamat Datang!',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        authProvider.user!.fullName,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        authProvider.user!.email,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
