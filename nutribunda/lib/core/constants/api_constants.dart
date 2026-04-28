@@ -27,7 +27,15 @@ class ApiConstants {
   static const String quizQuestions = '/quiz/questions';
   static const String quizSubmit = '/quiz/submit';
   
+  // Gemini API endpoints
+  static const String geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+  static const String geminiModel = 'gemini-pro';
+  // API Key should be configured via environment variable or secure config
+  // For development, you can set it here temporarily, but NEVER commit the actual key
+  static const String geminiApiKey = 'YOUR_GEMINI_API_KEY_HERE';
+  
   // Timeout
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
+  static const Duration geminiTimeout = Duration(seconds: 10); // Requirement 9.2: < 10 seconds
 }

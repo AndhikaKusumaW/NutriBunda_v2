@@ -51,3 +51,22 @@ class LocationException implements Exception {
   
   LocationException(this.message);
 }
+
+class ChatException implements Exception {
+  final String message;
+  final ChatErrorType type;
+  
+  ChatException(this.message, this.type);
+  
+  @override
+  String toString() => message;
+}
+
+enum ChatErrorType {
+  networkError,
+  apiTimeout,
+  invalidResponse,
+  rateLimitExceeded,
+  apiKeyInvalid,
+  unknown,
+}

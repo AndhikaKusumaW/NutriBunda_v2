@@ -8,6 +8,7 @@ import (
 	"nutribunda-backend/internal/diary"
 	"nutribunda-backend/internal/food"
 	"nutribunda-backend/internal/middleware"
+	"nutribunda-backend/internal/quiz"
 	"nutribunda-backend/internal/recipe"
 	"nutribunda-backend/internal/user"
 
@@ -39,6 +40,7 @@ func main() {
 	foodService := food.NewService(db)
 	recipeService := recipe.NewService(db)
 	diaryService := diary.NewService(db)
+	quizService := quiz.NewService(db)
 
 	// Initialize handlers
 	authHandler := auth.NewHandler(authService)
@@ -46,6 +48,7 @@ func main() {
 	foodHandler := food.NewHandler(foodService)
 	recipeHandler := recipe.NewHandler(recipeService)
 	diaryHandler := diary.NewHandler(diaryService)
+	quizHandler := quiz.NewHandler(quizService)
 
 	// Initialize Gin router
 	router := gin.Default()
@@ -116,6 +119,14 @@ func main() {
 			diaryRoutes.DELETE("/:id", diaryHandler.DeleteEntry)
 			diaryRoutes.POST("/sync", diaryHandler.SyncEntries)
 			diaryRoutes.POST("/resolve-conflict", diaryHandler.ResolveConflict)
+		}
+
+		// Quiz routes (public)
+		quizRoutes := api.Group("/quiz")
+		{
+			quizRoutes.GET("/questions", quizHandler.GetQuestions)
+			quizRoutes.POST("/submit", quizHandler.SubmitAnswers)
+			quizRoutes.GET("/questions/all", quizHandler.GetAllQuestions) // For admin/testing
 		}
 	}
 

@@ -9,12 +9,18 @@ import 'core/services/http_client_service.dart';
 import 'core/services/biometric_service.dart';
 import 'core/services/location_service.dart';
 import 'core/services/maps_launcher_service.dart';
+import 'core/services/chat_service.dart';
+import 'core/services/quiz_service.dart';
+import 'core/services/notification_service.dart';
 
 // Providers
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/food_diary_provider.dart';
 import 'presentation/providers/recipe_provider.dart';
 import 'presentation/providers/lbs_provider.dart';
+import 'presentation/providers/chat_provider.dart';
+import 'presentation/providers/quiz_provider.dart';
+import 'presentation/providers/notification_provider.dart';
 
 /// Service Locator instance
 /// Digunakan untuk dependency injection di seluruh aplikasi
@@ -77,6 +83,27 @@ Future<void> init() async {
     () => MapsLauncherService(),
   );
   
+  // Chat Service - untuk integrasi dengan Gemini API
+  // Requirements: 9.1, 9.2, 9.3, 9.4
+  sl.registerLazySingleton<ChatService>(
+    () => ChatService(dio: sl()),
+  );
+  
+  // Quiz Service - untuk quiz game functionality
+  // Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7
+  sl.registerLazySingleton<QuizService>(
+    () => QuizService(
+      httpClient: sl(),
+      prefs: sl(),
+    ),
+  );
+  
+  // Notification Service - untuk local notifications dengan timezone support
+  // Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6
+  sl.registerLazySingleton<NotificationService>(
+    () => NotificationService(),
+  );
+  
   // HTTP Client (Dio) - raw instance untuk custom usage
   sl.registerLazySingleton<Dio>(() {
     final dio = Dio(
@@ -132,6 +159,22 @@ Future<void> init() async {
   sl.registerFactory(() => LBSProvider(
     locationService: sl(),
     mapsLauncher: sl(),
+  ));
+  
+  // Chat Provider - Requirements: 9.1, 9.2, 9.5, 9.6
+  sl.registerFactory(() => ChatProvider(
+    chatService: sl(),
+  ));
+  
+  // Quiz Provider - Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7
+  sl.registerFactory(() => QuizProvider(
+    quizService: sl(),
+  ));
+  
+  // Notification Provider - Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6
+  sl.registerFactory(() => NotificationProvider(
+    notificationService: sl(),
+    prefs: sl(),
   ));
   
   // ============================================================================

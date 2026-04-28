@@ -248,38 +248,38 @@ Implementasi dibagi menjadi 6 fase utama:
     - Test fallback behavior (Maps app vs browser)
     - _Requirements: 8.1-8.7_
 
-- [ ] 13. Implementasi AI Chatbot (TanyaBunda)
-  - [ ] 13.1 Setup Gemini API integration
+- [x] 13. Implementasi AI Chatbot (TanyaBunda)
+  - [x] 13.1 Setup Gemini API integration
     - Konfigurasi Gemini API dengan system prompt
     - Implementasi ChatService untuk manage conversations
     - Buat error handling untuk API failures
     - _Requirements: 9.1, 9.2, 9.4_
 
-  - [ ] 13.2 Buat UI chatbot dengan conversation history
+  - [x] 13.2 Buat UI chatbot dengan conversation history
     - Implementasi ChatProvider untuk state management
     - Buat UI chat dengan message bubbles
     - Implementasi typing indicators dan loading states
     - _Requirements: 9.3, 9.5, 9.6_
 
-  - [ ] 13.3 Write unit tests untuk chatbot functionality
+  - [x] 13.3 Write unit tests untuk chatbot functionality
     - Test Gemini API integration
     - Test conversation history management
     - _Requirements: 9.1-9.6_
 
-- [ ] 14. Implementasi Quiz Game dan Notifikasi
-  - [ ] 14.1 Buat Quiz Game dengan scoring system
+- [x] 14. Implementasi Quiz Game dan Notifikasi
+  - [x] 14.1 Buat Quiz Game dengan scoring system
     - Implementasi QuizProvider dengan question randomization
     - Buat UI quiz dengan multiple choice
     - Implementasi local scoring dan high score tracking
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
 
-  - [ ] 14.2 Implementasi notification system
+  - [x] 14.2 Implementasi notification system
     - Setup flutter_local_notifications dengan timezone support
     - Implementasi NotificationService untuk MPASI dan vitamin reminders
     - Buat UI untuk manage notification settings
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6_
 
-  - [ ] 14.3 Write unit tests untuk quiz dan notifications
+  - [x] 14.3 Write unit tests untuk quiz dan notifications
     - Test quiz scoring dan randomization
     - Test notification scheduling dengan timezone
     - _Requirements: 10.1-10.7, 11.1-11.6_

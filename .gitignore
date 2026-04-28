@@ -1,1 +1,7 @@
 backend/.env
+
+# Ignore binary test files
+backend/quiz-test
+backend/*.exe
+backend/test-*
+backend/*-test
