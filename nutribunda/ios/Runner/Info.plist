@@ -68,5 +68,16 @@
 	</array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>NutriBunda memerlukan akses Face ID untuk autentikasi biometrik yang aman dan cepat</string>
+	<key>NSMotionUsageDescription</key>
+	<string>NutriBunda memerlukan akses sensor gerak untuk menghitung langkah kaki dan kalori yang terbakar</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>NutriBunda memerlukan akses lokasi untuk menemukan fasilitas kesehatan terdekat</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>NutriBunda memerlukan akses lokasi untuk menemukan fasilitas kesehatan terdekat</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>comgooglemaps</string>
+		<string>https</string>
+	</array>
 </dict>
 </plist>

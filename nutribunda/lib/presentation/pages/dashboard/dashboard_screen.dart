@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../providers/food_diary_provider.dart';
 import '../../widgets/dashboard/nutrition_progress_bar.dart';
 import '../../widgets/dashboard/nutrition_chart.dart';
+import '../../widgets/shake_to_recipe_widget.dart';
+import '../recipe/favorite_recipes_screen.dart';
 import '../../../core/services/nutrition_tracker_service.dart';
 import '../../../data/models/nutrition_summary.dart';
 
@@ -145,6 +147,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Colors.pink,
                   _motherSummary!,
                 ),
+              const SizedBox(height: 24),
+
+              // Shake-to-Recipe widget
+              const ShakeToRecipeWidget(),
               const SizedBox(height: 24),
 
               // Quick actions
@@ -404,6 +410,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            // Favorite recipes button
+            SizedBox(
+              width: double.infinity,
+              child: _buildQuickActionButton(
+                context,
+                'Resep Favorit',
+                Icons.favorite,
+                Colors.red,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FavoriteRecipesScreen(),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

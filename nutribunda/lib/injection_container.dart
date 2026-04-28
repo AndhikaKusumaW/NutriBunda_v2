@@ -7,10 +7,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/services/secure_storage_service.dart';
 import 'core/services/http_client_service.dart';
 import 'core/services/biometric_service.dart';
+import 'core/services/location_service.dart';
+import 'core/services/maps_launcher_service.dart';
 
 // Providers
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/food_diary_provider.dart';
+import 'presentation/providers/recipe_provider.dart';
+import 'presentation/providers/lbs_provider.dart';
 
 /// Service Locator instance
 /// Digunakan untuk dependency injection di seluruh aplikasi
@@ -61,6 +65,18 @@ Future<void> init() async {
     () => BiometricService(secureStorage: sl()),
   );
   
+  // Location Service - untuk mendapatkan GPS coordinates
+  // Requirements: 8.1, 8.2, 8.7
+  sl.registerLazySingleton<LocationService>(
+    () => LocationService(),
+  );
+  
+  // Maps Launcher Service - untuk membuka Google Maps dengan deep link
+  // Requirements: 8.3, 8.4, 8.5, 8.6
+  sl.registerLazySingleton<MapsLauncherService>(
+    () => MapsLauncherService(),
+  );
+  
   // HTTP Client (Dio) - raw instance untuk custom usage
   sl.registerLazySingleton<Dio>(() {
     final dio = Dio(
@@ -105,6 +121,17 @@ Future<void> init() async {
   // Food Diary Provider - Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
   sl.registerFactory(() => FoodDiaryProvider(
     httpClient: sl(),
+  ));
+  
+  // Recipe Provider - Requirements: 6.3, 6.4, 6.5, 7.1, 7.2, 7.3
+  sl.registerFactory(() => RecipeProvider(
+    httpClient: sl(),
+  ));
+  
+  // LBS Provider - Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7
+  sl.registerFactory(() => LBSProvider(
+    locationService: sl(),
+    mapsLauncher: sl(),
   ));
   
   // ============================================================================
