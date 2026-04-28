@@ -443,6 +443,105 @@ class AuthProvider extends ChangeNotifier {
   /// Dapatkan BiometricService untuk digunakan di settings
   BiometricService get biometricService => _biometricService;
 
+  /// Update user profile
+  /// Requirements: 12.4 - Validasi dan update data profil
+  Future<bool> updateProfile({
+    String? fullName,
+    double? weight,
+    double? height,
+    int? age,
+    bool? isBreastfeeding,
+    String? activityLevel,
+    String? timezone,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      // Validasi data
+      if (weight != null && (weight < 30 || weight > 200)) {
+        _errorMessage = 'Berat badan harus antara 30-200 kg';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      if (height != null && (height < 100 || height > 250)) {
+        _errorMessage = 'Tinggi badan harus antara 100-250 cm';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      if (age != null && (age < 15 || age > 60)) {
+        _errorMessage = 'Usia harus antara 15-60 tahun';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // Prepare update data
+      final updateData = <String, dynamic>{};
+      if (fullName != null) updateData['full_name'] = fullName;
+      if (weight != null) updateData['weight'] = weight;
+      if (height != null) updateData['height'] = height;
+      if (age != null) updateData['age'] = age;
+      if (isBreastfeeding != null) updateData['is_breastfeeding'] = isBreastfeeding;
+      if (activityLevel != null) updateData['activity_level'] = activityLevel;
+      if (timezone != null) updateData['timezone'] = timezone;
+
+      // Call update profile API
+      final response = await _httpClient.put(
+        ApiConstants.profile,
+        data: updateData,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final userData = data['user'] as Map<String, dynamic>?;
+        
+        if (userData != null) {
+          _user = UserModel.fromJson(userData);
+          _errorMessage = null;
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+      }
+
+      _errorMessage = 'Gagal memperbarui profil';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } on ValidationException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } on NetworkException {
+      _errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final message = e.response?.data['message'] as String?;
+        _errorMessage = message ?? 'Data profil tidak valid';
+      } else {
+        _errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+      }
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'Terjadi kesalahan yang tidak terduga: ${e.toString()}';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Clear error message
   void clearError() {
     _errorMessage = null;

@@ -166,75 +166,75 @@ Implementasi dibagi menjadi 6 fase utama:
     - **Property 4: Add/remove entry consistency**
     - **Validates: Requirements 4.3, 4.5**
 
-- [ ] 8. Implementasi Diet Plan dengan BMR/TDEE
-  - [ ] 8.1 Buat DietPlanProvider dengan kalkulasi BMR/TDEE
+- [x] 8. Implementasi Diet Plan dengan BMR/TDEE
+  - [x] 8.1 Buat DietPlanProvider dengan kalkulasi BMR/TDEE
     - Implementasi kalkulasi BMR menggunakan Mifflin-St Jeor formula
     - Implementasi kalkulasi TDEE dengan activity factors
     - Buat logic untuk target kalori dengan defisit aman
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 8.2 Implementasi UI Diet Plan dengan progress tracking
+  - [x] 8.2 Implementasi UI Diet Plan dengan progress tracking
     - Buat UI untuk input data fisik pengguna
     - Implementasi progress bar kalori dengan color coding
     - Buat dashboard diet plan dengan ringkasan harian
     - _Requirements: 5.8, 5.9, 5.10, 5.11_
 
-  - [ ] 8.3 Write property test untuk BMR/TDEE calculations
+  - [x] 8.3 Write property test untuk BMR/TDEE calculations
     - **Property 5: BMR calculation accuracy**
     - **Property 6: Calorie deficit safety**
     - **Validates: Requirements 5.1, 5.2, 5.3**
 
-- [ ] 9. Checkpoint - Validasi fitur inti
+- [x] 9. Checkpoint - Validasi fitur inti
   - Pastikan semua test pass, tanyakan user jika ada pertanyaan.
 
 ### Fase 5: Implementasi Sensor dan Fitur Interaktif
 
-- [ ] 10. Implementasi sensor integration
-  - [ ] 10.1 Implementasi Pedometer Service untuk step counting
+- [x] 10. Implementasi sensor integration
+  - [x] 10.1 Implementasi Pedometer Service untuk step counting
     - Setup pedometer plugin untuk menghitung langkah
     - Implementasi kalkulasi kalori terbakar dari langkah
     - Integrasi dengan DietPlanProvider untuk update real-time
     - _Requirements: 5.6, 5.7_
 
-  - [ ] 10.2 Implementasi Accelerometer Service untuk shake detection
+  - [x] 10.2 Implementasi Accelerometer Service untuk shake detection
     - Setup sensors_plus untuk accelerometer data
     - Implementasi shake detection dengan threshold dan debounce
     - Integrasi dengan random recipe selection
     - _Requirements: 6.1, 6.2, 6.3, 6.6_
 
-  - [ ] 10.3 Write property test untuk sensor services
+  - [x] 10.3 Write property test untuk sensor services
     - **Property 7: Shake detection debounce**
     - **Validates: Requirements 6.6**
 
-- [ ] 11. Implementasi Recipe dan Favorit
-  - [ ] 11.1 Buat RecipeProvider dan recipe screens
+- [x] 11. Implementasi Recipe dan Favorit
+  - [x] 11.1 Buat RecipeProvider dan recipe screens
     - Implementasi RecipeProvider untuk manage resep
     - Buat UI untuk display resep dengan detail lengkap
     - Implementasi shake-to-recipe dengan animasi
     - _Requirements: 6.3, 6.4, 6.5_
 
-  - [ ] 11.2 Implementasi sistem favorit resep
+  - [x] 11.2 Implementasi sistem favorit resep
     - Buat FavoriteProvider untuk manage resep favorit
     - Implementasi UI untuk save/remove favorit
     - Buat screen untuk daftar resep favorit
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-  - [ ] 11.3 Write unit tests untuk recipe management
+  - [x] 11.3 Write unit tests untuk recipe management
     - Test recipe favorit functionality
     - Test shake-to-recipe integration
     - _Requirements: 6.3-6.6, 7.1-7.4_
 
 ### Fase 6: Integrasi Eksternal dan Fitur Lanjutan
 
-- [ ] 12. Implementasi Location-Based Service (LBS)
-  - [ ] 12.1 Setup location services dan deep link launcher
+- [x] 12. Implementasi Location-Based Service (LBS)
+  - [x] 12.1 Setup location services dan deep link launcher
     - Setup geolocator untuk mendapatkan GPS coordinates
     - Setup url_launcher untuk membuka deep link
     - Implementasi permission handling untuk location access
     - Konfigurasi AndroidManifest.xml dan Info.plist untuk location permissions
     - _Requirements: 8.1, 8.2, 8.7_
 
-  - [ ] 12.2 Implementasi deep link launcher untuk Google Maps eksternal
+  - [x] 12.2 Implementasi deep link launcher untuk Google Maps eksternal
     - Buat LocationService untuk mendapatkan GPS coordinates pengguna
     - Buat MapsLauncherService untuk membuat deep link URL Google Maps
     - Buat LBSProvider untuk state management lokasi dan error handling
@@ -242,7 +242,7 @@ Implementasi dibagi menjadi 6 fase utama:
     - Implementasi logic untuk membuka Google Maps app atau fallback ke browser
     - _Requirements: 8.3, 8.4, 8.5, 8.6_
 
-  - [ ] 12.3 Write integration tests untuk LBS functionality
+  - [x] 12.3 Write integration tests untuk LBS functionality
     - Test location permission handling dan error scenarios
     - Test deep link URL formatting untuk berbagai kategori
     - Test fallback behavior (Maps app vs browser)
