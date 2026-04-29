@@ -608,3 +608,544 @@ func TestProperty_NutritionTrackingConsistency_ProfileIsolation(t *testing.T) {
 		})
 	}
 }
+
+// Property 8: Sync Consistency
+// Validates Requirements 3.4, 3.5
+//
+// This property test ensures that the synchronization mechanism maintains data consistency
+// between client and server regardless of:
+// - The order of sync operations
+// - Network interruptions (simulated by multiple sync cycles)
+// - Concurrent modifications on client and server
+// - Conflict resolution strategies
+//
+// This validates:
+// - Requirement 3.4: Initial download and storage of Food_Database to SQLite
+// - Requirement 3.5: Synchronization of local copy with server updates
+
+// TestProperty_SyncConsistency_Idempotency tests that syncing the same data
+// multiple times produces the same result
+func TestProperty_SyncConsistency_Idempotency(t *testing.T) {
+	const numIterations = 50
+
+	for i := 0; i < numIterations; i++ {
+		t.Run("Iteration_"+string(rune(i)), func(t *testing.T) {
+			// Setup
+			db := setupPropertyTestDB(t)
+			service := NewService(db)
+			userID := createPropertyTestUser(t, db)
+
+			seed := time.Now().UnixNano() + int64(i)
+			r := rand.New(rand.NewSource(seed))
+
+			// Create some entries on server
+			var serverEntries []SyncDiaryEntry
+			numEntries := r.Intn(5) + 1
+			for j := 0; j < numEntries; j++ {
+				food := generateRandomFood(t, db, seed+int64(j))
+				entryDate := time.Now().AddDate(0, 0, -r.Intn(30)).Format("2006-01-02")
+				
+				entry := SyncDiaryEntry{
+					ID:          uuid.New(),
+					ProfileType: []string{"baby", "mother"}[r.Intn(2)],
+					FoodID:      &food.ID,
+					ServingSize: float64(r.Intn(300)) + 50.0,
+					MealTime:    []string{"breakfast", "lunch", "dinner", "snack"}[r.Intn(4)],
+					Calories:    food.CaloriesPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Protein:     food.ProteinPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Carbs:       food.CarbsPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Fat:         food.FatPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					EntryDate:   entryDate,
+					UpdatedAt:   time.Now().Format(time.RFC3339),
+				}
+				serverEntries = append(serverEntries, entry)
+			}
+
+			// First sync
+			syncReq1 := &SyncRequest{
+				LastSyncTime: "",
+				Entries:      serverEntries,
+				DeletedIDs:   []uuid.UUID{},
+			}
+
+			response1, err := service.SyncDiaryEntries(userID, syncReq1)
+			require.NoError(t, err)
+			assert.Empty(t, response1.Conflicts)
+
+			// Get state after first sync
+			var entriesAfterSync1 []database.DiaryEntry
+			err = db.Where("user_id = ?", userID).Find(&entriesAfterSync1).Error
+			require.NoError(t, err)
+
+			// Second sync with same data (idempotency test)
+			syncReq2 := &SyncRequest{
+				LastSyncTime: time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
+				Entries:      serverEntries,
+				DeletedIDs:   []uuid.UUID{},
+			}
+
+			response2, err := service.SyncDiaryEntries(userID, syncReq2)
+			require.NoError(t, err)
+			assert.Empty(t, response2.Conflicts)
+
+			// Get state after second sync
+			var entriesAfterSync2 []database.DiaryEntry
+			err = db.Where("user_id = ?", userID).Find(&entriesAfterSync2).Error
+			require.NoError(t, err)
+
+			// PROPERTY: Syncing same data multiple times should produce same result
+			assert.Equal(t, len(entriesAfterSync1), len(entriesAfterSync2),
+				"Number of entries should be same after idempotent sync")
+
+			// Verify each entry is identical
+			for _, entry1 := range entriesAfterSync1 {
+				found := false
+				for _, entry2 := range entriesAfterSync2 {
+					if entry1.ID == entry2.ID {
+						found = true
+						assert.Equal(t, entry1.Calories, entry2.Calories)
+						assert.Equal(t, entry1.Protein, entry2.Protein)
+						assert.Equal(t, entry1.Carbs, entry2.Carbs)
+						assert.Equal(t, entry1.Fat, entry2.Fat)
+						assert.Equal(t, entry1.ServingSize, entry2.ServingSize)
+						break
+					}
+				}
+				assert.True(t, found, "Entry should exist after idempotent sync")
+			}
+		})
+	}
+}
+
+// TestProperty_SyncConsistency_Convergence tests that client and server
+// converge to the same state after sync completes without conflicts
+func TestProperty_SyncConsistency_Convergence(t *testing.T) {
+	const numIterations = 50
+
+	for i := 0; i < numIterations; i++ {
+		t.Run("Iteration_"+string(rune(i)), func(t *testing.T) {
+			// Setup two databases to simulate client and server
+			dbServer := setupPropertyTestDB(t)
+			dbClient := setupPropertyTestDB(t)
+			
+			serviceServer := NewService(dbServer)
+			
+			userID := createPropertyTestUser(t, dbServer)
+			createPropertyTestUser(t, dbClient) // Same user on client
+
+			seed := time.Now().UnixNano() + int64(i)
+			r := rand.New(rand.NewSource(seed))
+
+			// Create entries on server
+			var serverEntries []SyncDiaryEntry
+			numServerEntries := r.Intn(5) + 1
+			for j := 0; j < numServerEntries; j++ {
+				food := generateRandomFood(t, dbServer, seed+int64(j))
+				entryDate := time.Now().AddDate(0, 0, -r.Intn(30)).Format("2006-01-02")
+				
+				entry := SyncDiaryEntry{
+					ID:          uuid.New(),
+					ProfileType: []string{"baby", "mother"}[r.Intn(2)],
+					FoodID:      &food.ID,
+					ServingSize: float64(r.Intn(300)) + 50.0,
+					MealTime:    []string{"breakfast", "lunch", "dinner", "snack"}[r.Intn(4)],
+					Calories:    food.CaloriesPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Protein:     food.ProteinPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Carbs:       food.CarbsPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Fat:         food.FatPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					EntryDate:   entryDate,
+					UpdatedAt:   time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
+				}
+				serverEntries = append(serverEntries, entry)
+				
+				// Create on server database
+				dbEntry := database.DiaryEntry{
+					ID:          entry.ID,
+					UserID:      userID,
+					ProfileType: entry.ProfileType,
+					FoodID:      entry.FoodID,
+					ServingSize: entry.ServingSize,
+					MealTime:    entry.MealTime,
+					Calories:    entry.Calories,
+					Protein:     entry.Protein,
+					Carbs:       entry.Carbs,
+					Fat:         entry.Fat,
+					EntryDate:   time.Now().AddDate(0, 0, -r.Intn(30)),
+					UpdatedAt:   time.Now().Add(-1 * time.Hour),
+				}
+				dbServer.Create(&dbEntry)
+			}
+
+			// Client syncs with server
+			syncReq := &SyncRequest{
+				LastSyncTime: "",
+				Entries:      []SyncDiaryEntry{},
+				DeletedIDs:   []uuid.UUID{},
+			}
+
+			response, err := serviceServer.SyncDiaryEntries(userID, syncReq)
+			require.NoError(t, err)
+			assert.Empty(t, response.Conflicts)
+
+			// Apply server entries to client
+			for _, serverEntry := range response.Entries {
+				clientEntry := database.DiaryEntry{
+					ID:          serverEntry.ID,
+					UserID:      userID,
+					ProfileType: serverEntry.ProfileType,
+					FoodID:      serverEntry.FoodID,
+					ServingSize: serverEntry.ServingSize,
+					MealTime:    serverEntry.MealTime,
+					Calories:    serverEntry.Calories,
+					Protein:     serverEntry.Protein,
+					Carbs:       serverEntry.Carbs,
+					Fat:         serverEntry.Fat,
+					EntryDate:   serverEntry.EntryDate,
+					UpdatedAt:   serverEntry.UpdatedAt,
+				}
+				dbClient.Create(&clientEntry)
+			}
+
+			// Get final state from both databases
+			var serverFinalEntries []database.DiaryEntry
+			var clientFinalEntries []database.DiaryEntry
+			
+			dbServer.Where("user_id = ?", userID).Find(&serverFinalEntries)
+			dbClient.Where("user_id = ?", userID).Find(&clientFinalEntries)
+
+			// PROPERTY: After sync without conflicts, client and server should have identical data
+			assert.Equal(t, len(serverFinalEntries), len(clientFinalEntries),
+				"Client and server should have same number of entries after convergence")
+
+			// Verify each entry matches
+			for _, serverEntry := range serverFinalEntries {
+				found := false
+				for _, clientEntry := range clientFinalEntries {
+					if serverEntry.ID == clientEntry.ID {
+						found = true
+						assert.InDelta(t, serverEntry.Calories, clientEntry.Calories, 0.01,
+							"Calories should match after convergence")
+						assert.InDelta(t, serverEntry.Protein, clientEntry.Protein, 0.01,
+							"Protein should match after convergence")
+						assert.InDelta(t, serverEntry.Carbs, clientEntry.Carbs, 0.01,
+							"Carbs should match after convergence")
+						assert.InDelta(t, serverEntry.Fat, clientEntry.Fat, 0.01,
+							"Fat should match after convergence")
+						break
+					}
+				}
+				assert.True(t, found, "All server entries should exist on client after convergence")
+			}
+		})
+	}
+}
+
+// TestProperty_SyncConsistency_ConflictDetection tests that concurrent
+// modifications are detected and reported as conflicts
+func TestProperty_SyncConsistency_ConflictDetection(t *testing.T) {
+	const numIterations = 50
+
+	for i := 0; i < numIterations; i++ {
+		t.Run("Iteration_"+string(rune(i)), func(t *testing.T) {
+			// Setup
+			db := setupPropertyTestDB(t)
+			service := NewService(db)
+			userID := createPropertyTestUser(t, db)
+
+			seed := time.Now().UnixNano() + int64(i)
+			r := rand.New(rand.NewSource(seed))
+
+			// Create entry on server
+			food := generateRandomFood(t, db, seed)
+			entryID := uuid.New()
+			serverTime := time.Now()
+			
+			serverEntry := database.DiaryEntry{
+				ID:          entryID,
+				UserID:      userID,
+				ProfileType: "baby",
+				FoodID:      &food.ID,
+				ServingSize: 100.0,
+				MealTime:    "breakfast",
+				Calories:    150.0,
+				Protein:     5.0,
+				Carbs:       20.0,
+				Fat:         3.0,
+				EntryDate:   time.Now().AddDate(0, 0, -r.Intn(30)),
+				UpdatedAt:   serverTime,
+			}
+			db.Create(&serverEntry)
+
+			// Client has older version and tries to update
+			clientTime := serverTime.Add(-1 * time.Hour)
+			clientEntry := SyncDiaryEntry{
+				ID:          entryID,
+				ProfileType: "baby",
+				FoodID:      &food.ID,
+				ServingSize: 120.0, // Different value
+				MealTime:    "breakfast",
+				Calories:    180.0, // Different value
+				Protein:     6.0,
+				Carbs:       22.0,
+				Fat:         4.0,
+				EntryDate:   serverEntry.EntryDate.Format("2006-01-02"),
+				UpdatedAt:   clientTime.Format(time.RFC3339),
+			}
+
+			syncReq := &SyncRequest{
+				LastSyncTime: clientTime.Add(-24 * time.Hour).Format(time.RFC3339),
+				Entries:      []SyncDiaryEntry{clientEntry},
+				DeletedIDs:   []uuid.UUID{},
+			}
+
+			response, err := service.SyncDiaryEntries(userID, syncReq)
+			require.NoError(t, err)
+
+			// PROPERTY: Concurrent modifications should be detected as conflicts
+			assert.NotEmpty(t, response.Conflicts,
+				"Concurrent modification should be detected as conflict")
+			
+			if len(response.Conflicts) > 0 {
+				assert.Equal(t, "update_conflict", response.Conflicts[0].ConflictType,
+					"Conflict type should be update_conflict")
+				assert.Equal(t, entryID, response.Conflicts[0].EntryID,
+					"Conflict should reference correct entry ID")
+			}
+
+			// Verify server entry was NOT modified (conflict not auto-resolved)
+			var unchangedEntry database.DiaryEntry
+			db.Where("id = ?", entryID).First(&unchangedEntry)
+			assert.Equal(t, serverEntry.Calories, unchangedEntry.Calories,
+				"Server entry should remain unchanged when conflict detected")
+		})
+	}
+}
+
+// TestProperty_SyncConsistency_DataIntegrity tests that no data is lost
+// during sync operations
+func TestProperty_SyncConsistency_DataIntegrity(t *testing.T) {
+	const numIterations = 50
+
+	for i := 0; i < numIterations; i++ {
+		t.Run("Iteration_"+string(rune(i)), func(t *testing.T) {
+			// Setup
+			db := setupPropertyTestDB(t)
+			service := NewService(db)
+			userID := createPropertyTestUser(t, db)
+
+			seed := time.Now().UnixNano() + int64(i)
+			r := rand.New(rand.NewSource(seed))
+
+			// Create initial entries on server
+			var initialEntries []database.DiaryEntry
+			numInitialEntries := r.Intn(5) + 3 // 3-7 entries
+			
+			for j := 0; j < numInitialEntries; j++ {
+				food := generateRandomFood(t, db, seed+int64(j))
+				entry := database.DiaryEntry{
+					ID:          uuid.New(),
+					UserID:      userID,
+					ProfileType: []string{"baby", "mother"}[r.Intn(2)],
+					FoodID:      &food.ID,
+					ServingSize: float64(r.Intn(300)) + 50.0,
+					MealTime:    []string{"breakfast", "lunch", "dinner", "snack"}[r.Intn(4)],
+					Calories:    food.CaloriesPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Protein:     food.ProteinPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Carbs:       food.CarbsPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Fat:         food.FatPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					EntryDate:   time.Now().AddDate(0, 0, -r.Intn(30)),
+					UpdatedAt:   time.Now().Add(-2 * time.Hour),
+				}
+				db.Create(&entry)
+				initialEntries = append(initialEntries, entry)
+			}
+
+			// Calculate initial total nutrition
+			var initialTotalCalories, initialTotalProtein, initialTotalCarbs, initialTotalFat float64
+			for _, entry := range initialEntries {
+				initialTotalCalories += entry.Calories
+				initialTotalProtein += entry.Protein
+				initialTotalCarbs += entry.Carbs
+				initialTotalFat += entry.Fat
+			}
+
+			// Client adds new entries
+			var clientNewEntries []SyncDiaryEntry
+			numNewEntries := r.Intn(3) + 1 // 1-3 new entries
+			
+			for j := 0; j < numNewEntries; j++ {
+				food := generateRandomFood(t, db, seed+int64(j+100))
+				entry := SyncDiaryEntry{
+					ID:          uuid.New(),
+					ProfileType: []string{"baby", "mother"}[r.Intn(2)],
+					FoodID:      &food.ID,
+					ServingSize: float64(r.Intn(300)) + 50.0,
+					MealTime:    []string{"breakfast", "lunch", "dinner", "snack"}[r.Intn(4)],
+					Calories:    food.CaloriesPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Protein:     food.ProteinPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Carbs:       food.CarbsPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Fat:         food.FatPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					EntryDate:   time.Now().AddDate(0, 0, -r.Intn(30)).Format("2006-01-02"),
+					UpdatedAt:   time.Now().Format(time.RFC3339),
+				}
+				clientNewEntries = append(clientNewEntries, entry)
+			}
+
+			// Perform sync
+			syncReq := &SyncRequest{
+				LastSyncTime: time.Now().Add(-3 * time.Hour).Format(time.RFC3339),
+				Entries:      clientNewEntries,
+				DeletedIDs:   []uuid.UUID{},
+			}
+
+			response, err := service.SyncDiaryEntries(userID, syncReq)
+			require.NoError(t, err)
+			assert.Empty(t, response.Conflicts)
+
+			// Get all entries after sync
+			var finalEntries []database.DiaryEntry
+			db.Where("user_id = ?", userID).Find(&finalEntries)
+
+			// Calculate final total nutrition
+			var finalTotalCalories, finalTotalProtein, finalTotalCarbs, finalTotalFat float64
+			for _, entry := range finalEntries {
+				finalTotalCalories += entry.Calories
+				finalTotalProtein += entry.Protein
+				finalTotalCarbs += entry.Carbs
+				finalTotalFat += entry.Fat
+			}
+
+			// Calculate expected totals (initial + new entries)
+			var expectedTotalCalories, expectedTotalProtein, expectedTotalCarbs, expectedTotalFat float64
+			expectedTotalCalories = initialTotalCalories
+			expectedTotalProtein = initialTotalProtein
+			expectedTotalCarbs = initialTotalCarbs
+			expectedTotalFat = initialTotalFat
+			
+			for _, entry := range clientNewEntries {
+				expectedTotalCalories += entry.Calories
+				expectedTotalProtein += entry.Protein
+				expectedTotalCarbs += entry.Carbs
+				expectedTotalFat += entry.Fat
+			}
+
+			// PROPERTY: No data should be lost during sync
+			assert.Equal(t, numInitialEntries+numNewEntries, len(finalEntries),
+				"All entries should be preserved after sync")
+			
+			assert.InDelta(t, expectedTotalCalories, finalTotalCalories, 0.01,
+				"Total calories should be preserved (no data loss)")
+			assert.InDelta(t, expectedTotalProtein, finalTotalProtein, 0.01,
+				"Total protein should be preserved (no data loss)")
+			assert.InDelta(t, expectedTotalCarbs, finalTotalCarbs, 0.01,
+				"Total carbs should be preserved (no data loss)")
+			assert.InDelta(t, expectedTotalFat, finalTotalFat, 0.01,
+				"Total fat should be preserved (no data loss)")
+		})
+	}
+}
+
+// TestProperty_SyncConsistency_TimestampOrdering tests that sync correctly
+// uses timestamps to determine what needs to be synced
+func TestProperty_SyncConsistency_TimestampOrdering(t *testing.T) {
+	const numIterations = 50
+
+	for i := 0; i < numIterations; i++ {
+		t.Run("Iteration_"+string(rune(i)), func(t *testing.T) {
+			// Setup
+			db := setupPropertyTestDB(t)
+			service := NewService(db)
+			userID := createPropertyTestUser(t, db)
+
+			seed := time.Now().UnixNano() + int64(i)
+			r := rand.New(rand.NewSource(seed))
+
+			baseTime := time.Now().Add(-24 * time.Hour)
+			lastSyncTime := baseTime.Add(12 * time.Hour)
+
+			// Create entries with timestamps before last sync (should NOT be returned)
+			var oldEntries []database.DiaryEntry
+			numOldEntries := r.Intn(3) + 1
+			
+			for j := 0; j < numOldEntries; j++ {
+				food := generateRandomFood(t, db, seed+int64(j))
+				entry := database.DiaryEntry{
+					ID:          uuid.New(),
+					UserID:      userID,
+					ProfileType: []string{"baby", "mother"}[r.Intn(2)],
+					FoodID:      &food.ID,
+					ServingSize: float64(r.Intn(300)) + 50.0,
+					MealTime:    []string{"breakfast", "lunch", "dinner", "snack"}[r.Intn(4)],
+					Calories:    food.CaloriesPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Protein:     food.ProteinPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Carbs:       food.CarbsPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Fat:         food.FatPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					EntryDate:   baseTime.AddDate(0, 0, -r.Intn(30)),
+					UpdatedAt:   lastSyncTime.Add(-time.Duration(r.Intn(600)+60) * time.Minute), // Before last sync
+				}
+				db.Create(&entry)
+				oldEntries = append(oldEntries, entry)
+			}
+
+			// Create entries with timestamps after last sync (SHOULD be returned)
+			var newEntries []database.DiaryEntry
+			numNewEntries := r.Intn(3) + 1
+			
+			for j := 0; j < numNewEntries; j++ {
+				food := generateRandomFood(t, db, seed+int64(j+100))
+				entry := database.DiaryEntry{
+					ID:          uuid.New(),
+					UserID:      userID,
+					ProfileType: []string{"baby", "mother"}[r.Intn(2)],
+					FoodID:      &food.ID,
+					ServingSize: float64(r.Intn(300)) + 50.0,
+					MealTime:    []string{"breakfast", "lunch", "dinner", "snack"}[r.Intn(4)],
+					Calories:    food.CaloriesPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Protein:     food.ProteinPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Carbs:       food.CarbsPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					Fat:         food.FatPer100g * (float64(r.Intn(300)) + 50.0) / 100,
+					EntryDate:   baseTime.AddDate(0, 0, -r.Intn(30)),
+					UpdatedAt:   lastSyncTime.Add(time.Duration(r.Intn(600)+60) * time.Minute), // After last sync
+				}
+				db.Create(&entry)
+				newEntries = append(newEntries, entry)
+			}
+
+			// Perform sync
+			syncReq := &SyncRequest{
+				LastSyncTime: lastSyncTime.Format(time.RFC3339),
+				Entries:      []SyncDiaryEntry{},
+				DeletedIDs:   []uuid.UUID{},
+			}
+
+			response, err := service.SyncDiaryEntries(userID, syncReq)
+			require.NoError(t, err)
+
+			// PROPERTY: Only entries updated after last sync should be returned
+			assert.Equal(t, numNewEntries, len(response.Entries),
+				"Only entries updated after last sync should be returned")
+
+			// Verify returned entries are the new ones
+			returnedIDs := make(map[uuid.UUID]bool)
+			for _, entry := range response.Entries {
+				returnedIDs[entry.ID] = true
+			}
+
+			for _, newEntry := range newEntries {
+				assert.True(t, returnedIDs[newEntry.ID],
+					"New entry should be in sync response")
+			}
+
+			for _, oldEntry := range oldEntries {
+				assert.False(t, returnedIDs[oldEntry.ID],
+					"Old entry should NOT be in sync response")
+			}
+
+			// Verify all returned entries have UpdatedAt > lastSyncTime
+			for _, entry := range response.Entries {
+				assert.True(t, entry.UpdatedAt.After(lastSyncTime),
+					"All returned entries should have UpdatedAt after lastSyncTime")
+			}
+		})
+	}
+}

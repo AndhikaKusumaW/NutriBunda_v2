@@ -11,6 +11,7 @@ class SecureStorageService {
   static const String _keyUserId = 'user_id';
   static const String _keyUserEmail = 'user_email';
   static const String _keyBiometricEnabled = 'biometric_enabled';
+  static const String _keyLastSyncTime = 'last_sync_time';
 
   SecureStorageService({FlutterSecureStorage? secureStorage})
       : _secureStorage = secureStorage ??
@@ -143,6 +144,37 @@ class SecureStorageService {
       return value == 'true';
     } catch (e) {
       return false;
+    }
+  }
+
+  // ==================== Sync Management ====================
+
+  /// Menyimpan waktu sinkronisasi terakhir
+  /// Requirements: 3.5, 4.1, 7.4 - Track last sync time for incremental sync
+  Future<void> setLastSyncTime(String timestamp) async {
+    try {
+      await _secureStorage.write(key: _keyLastSyncTime, value: timestamp);
+    } catch (e) {
+      throw Exception('Failed to save last sync time: $e');
+    }
+  }
+
+  /// Mengambil waktu sinkronisasi terakhir
+  /// Returns RFC3339 timestamp string or null if never synced
+  Future<String?> getLastSyncTime() async {
+    try {
+      return await _secureStorage.read(key: _keyLastSyncTime);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Menghapus waktu sinkronisasi terakhir
+  Future<void> clearLastSyncTime() async {
+    try {
+      await _secureStorage.delete(key: _keyLastSyncTime);
+    } catch (e) {
+      throw Exception('Failed to clear last sync time: $e');
     }
   }
 
