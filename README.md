@@ -14,6 +14,78 @@ Aplikasi mobile Flutter untuk memantau gizi MPASI (Makanan Pendamping ASI) anak 
 - **Notifikasi**: Pengingat jadwal makan MPASI dan vitamin
 - **Offline-First**: Aplikasi tetap berfungsi tanpa koneksi internet
 
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Flutter SDK 3.x
+- Go 1.26+
+- Docker Desktop
+
+### Setup in 5 Minutes
+
+```bash
+# 1. Start database
+docker-compose up -d
+
+# 2. Setup backend
+cd backend
+cp .env.example .env
+go mod download
+go run cmd/api/main.go
+
+# 3. Setup Flutter (in new terminal)
+cd nutribunda
+flutter pub get
+flutter run
+```
+
+**Untuk panduan lengkap, lihat [Getting Started Guide](./docs/getting-started/)**
+
+## 📚 Dokumentasi
+
+Semua dokumentasi telah diorganisir di folder [`docs/`](./docs/):
+
+### 🎯 [Getting Started](./docs/getting-started/)
+Panduan setup dan memulai development
+- [Project Overview](./docs/getting-started/project-overview.md)
+- [Database Setup](./docs/getting-started/database-setup.md)
+- [Backend Setup](./docs/getting-started/backend-setup.md)
+- [Flutter Setup](./docs/getting-started/flutter-setup.md)
+
+### 🔧 [Backend Documentation](./docs/backend/)
+Dokumentasi backend API (Golang)
+- [API Testing Guide](./docs/backend/api-testing-guide.md)
+- [Testing Guide](./docs/backend/testing-guide.md)
+- [Modules Documentation](./docs/backend/modules/)
+
+### 📱 [Frontend Documentation](./docs/frontend/)
+Dokumentasi Flutter mobile app
+- [Testing Guide](./docs/frontend/testing-guide.md)
+- [Accessibility Guide](./docs/frontend/accessibility-guide.md)
+- [Features Documentation](./docs/frontend/features/)
+- [Architecture Documentation](./docs/frontend/architecture/)
+
+### 💡 [Implementation Guides](./docs/implementation/)
+Panduan implementasi fitur-fitur spesifik
+- [Gemini API Setup](./docs/implementation/gemini-api-setup.md)
+- [SQLite Implementation](./docs/implementation/sqlite-implementation.md)
+- [Sync Implementation](./docs/implementation/sync-implementation.md)
+- [Pedometer Implementation](./docs/implementation/pedometer/)
+
+### 📋 [Task Summaries](./docs/tasks/)
+Ringkasan implementasi per task
+- [Task 6: Authentication](./docs/tasks/task-6/)
+- [Task 7: Food Diary](./docs/tasks/task-7/)
+- [Task 8: Diet Plan](./docs/tasks/task-8/)
+- [Task 10-19: Other Features](./docs/tasks/)
+
+### 🧪 [Testing Documentation](./docs/testing/)
+Dokumentasi testing dan quality assurance
+- [Backend Testing](./docs/testing/backend/)
+- [Frontend Testing](./docs/testing/frontend/)
+- [Property-Based Testing](./docs/testing/property-based/)
+
 ## 🏗️ Arsitektur
 
 ### Frontend (Flutter)
@@ -33,240 +105,49 @@ Aplikasi mobile Flutter untuk memantau gizi MPASI (Makanan Pendamping ASI) anak 
 
 ```
 NutriBunda/
-├── nutribunda/              # Flutter mobile app
-│   ├── lib/
-│   │   ├── core/           # Core utilities, constants, services
-│   │   ├── data/           # Data layer (models, repositories, datasources)
-│   │   ├── domain/         # Domain layer (entities, repositories, usecases)
-│   │   ├── presentation/   # Presentation layer (providers, pages, widgets)
-│   │   └── main.dart
-│   └── pubspec.yaml
-│
 ├── backend/                # Golang backend API
-│   ├── cmd/
-│   │   ├── api/           # Main API server
-│   │   └── test-db/       # Database connection test
-│   ├── internal/          # Internal packages
-│   │   ├── auth/          # Authentication logic
-│   │   ├── user/          # User management
-│   │   ├── food/          # Food database
-│   │   ├── diary/         # Food diary
-│   │   ├── recipe/        # Recipe management
-│   │   ├── quiz/          # Quiz game
-│   │   ├── database/      # Database models and migrations
-│   │   └── middleware/    # HTTP middlewares
-│   ├── pkg/               # Public packages
-│   ├── configs/           # Configuration
-│   └── go.mod
-│
+├── nutribunda/            # Flutter mobile app
 ├── database/              # Database setup
-│   ├── init/             # Initialization scripts
-│   └── README.md
-│
+├── docs/                  # 📚 Dokumentasi lengkap
+│   ├── getting-started/  # Setup guides
+│   ├── backend/          # Backend documentation
+│   ├── frontend/         # Frontend documentation
+│   ├── implementation/   # Implementation guides
+│   ├── tasks/            # Task summaries
+│   └── testing/          # Testing documentation
 ├── .kiro/                # Kiro specs
-│   └── specs/
-│       └── nutribunda/
-│           ├── requirements.md
-│           ├── design.md
-│           └── tasks.md
-│
-├── docker-compose.yml    # PostgreSQL container
-└── README.md
+└── docker-compose.yml    # PostgreSQL container
 ```
 
-## 🚀 Quick Start
+## 📊 Status Implementasi
 
-### Prerequisites
+**Progress**: 5/20 Tasks Complete (25%)
 
-- Flutter SDK 3.x
-- Go 1.26+
-- Docker Desktop
-- PostgreSQL client (optional)
+### ✅ Completed Tasks
 
-### 1. Setup Database
+- **Task 1**: Setup Proyek dan Infrastruktur
+- **Task 2**: Autentikasi dan Keamanan Backend
+- **Task 3**: Food Database dan API
+- **Task 4**: Food Diary API
+- **Task 5**: Setup State Management dan Arsitektur Flutter
 
-```bash
-# Start PostgreSQL container
-docker-compose up -d
+### 📋 Upcoming
 
-# Verify container is running
-docker-compose ps
+- **Task 6**: Autentikasi Flutter
+- **Task 7–9**: Fitur Utama (Food Diary UI, Diet Plan)
+- **Task 10–11**: Sensor & Resep
+- **Task 12–14**: Integrasi Eksternal (LBS, AI Chatbot, Quiz, Notifikasi)
+- **Task 15–17**: UI/UX & Offline
+- **Task 18–20**: Testing & Finalisasi
 
-# Check logs
-docker-compose logs postgres
-```
-
-### 2. Setup Backend
-
-```bash
-cd backend
-
-# Install dependencies
-go mod download
-
-# Copy environment file
-cp .env.example .env
-
-# Test database connection and run migrations
-go run cmd/test-db/main.go
-
-# Run backend server
-go run cmd/api/main.go
-```
-
-Backend akan berjalan di `http://localhost:8080`
-
-### 3. Setup Flutter App
-
-```bash
-cd nutribunda
-
-# Install dependencies
-flutter pub get
-
-# Run app (pilih device/emulator)
-flutter run
-```
-
-## 🗄️ Database
-
-<!-- ### Connection Details
-
-- **Host**: localhost
-- **Port**: 5432
-- **Database**: nutribunda
-- **User**: nutribunda_user
-- **Password**: nutribunda_pass -->
-
-### Tables
-
-1. **users** - Data pengguna
-2. **foods** - Database makanan dan nutrisi
-3. **recipes** - Resep MPASI
-4. **diary_entries** - Catatan makanan harian
-5. **favorite_recipes** - Resep favorit pengguna
-6. **quiz_questions** - Pertanyaan kuis
-7. **notifications** - Pengaturan notifikasi
-
-### Migrations
-
-Migrations dijalankan otomatis saat backend start menggunakan GORM AutoMigrate.
-
-### Seeding Data
-
-Untuk seed data awal (makanan, resep, quiz):
-
-```bash
-cd backend
-# TODO: Implement seed command
-```
-
-## 🔧 Development
-
-### Backend Development
-
-```bash
-cd backend
-
-# Run with hot reload (install air first)
-go install github.com/air-verse/air@latest
-air
-
-# Run tests
-go test ./...
-
-# Build for production
-go build -o nutribunda-api cmd/api/main.go
-```
-
-### Flutter Development
-
-```bash
-cd nutribunda
-
-# Run with hot reload
-flutter run
-
-# Run tests
-flutter test
-
-# Build APK
-flutter build apk
-
-# Build iOS
-flutter build ios
-```
-
-### Database Management
-
-```bash
-# Connect to database
-docker-compose exec postgres psql -U nutribunda_user -d nutribunda
-
-# Stop database
-docker-compose down
-
-# Reset database (WARNING: deletes all data)
-docker-compose down -v
-docker-compose up -d
-```
-
-## 📝 API Documentation
-
-### Health Check
-```
-GET /api/health
-```
-
-### Authentication (Coming Soon)
-```
-POST /api/auth/register
-POST /api/auth/login
-POST /api/auth/logout
-```
-
-### User Profile (Coming Soon)
-```
-GET /api/profile
-PUT /api/profile
-POST /api/profile/upload-image
-```
-
-### Food Database (Coming Soon)
-```
-GET /api/foods
-GET /api/foods/:id
-GET /api/foods/sync
-```
-
-### Food Diary (Coming Soon)
-```
-GET /api/diary
-POST /api/diary
-DELETE /api/diary/:id
-```
-
-### Recipes (Coming Soon)
-```
-GET /api/recipes
-GET /api/recipes/random
-GET /api/recipes/favorites
-POST /api/recipes/:id/favorite
-DELETE /api/recipes/:id/favorite
-```
-
-### Quiz (Coming Soon)
-```
-GET /api/quiz/questions
-POST /api/quiz/submit
-```
+Lihat [Project Overview](./docs/getting-started/project-overview.md) untuk detail lengkap.
 
 ## 🧪 Testing
 
 ### Backend Tests
 ```bash
 cd backend
-go test ./... -v
+go test ./...
 ```
 
 ### Flutter Tests
@@ -275,32 +156,7 @@ cd nutribunda
 flutter test
 ```
 
-### Integration Tests
-```bash
-cd nutribunda
-flutter test integration_test/
-```
-
-## 📦 Dependencies
-
-### Flutter Dependencies
-- provider - State management
-- dio - HTTP client
-- sqflite - Local database
-- flutter_secure_storage - Secure storage
-- local_auth - Biometric authentication
-- sensors_plus - Accelerometer
-- pedometer - Step counter
-- geolocator - GPS
-- google_maps_flutter - Maps
-- flutter_local_notifications - Notifications
-
-### Go Dependencies
-- gin - Web framework
-- gorm - ORM
-- jwt - Authentication
-- bcrypt - Password hashing
-- godotenv - Environment variables
+Lihat [Testing Documentation](./docs/testing/) untuk panduan lengkap.
 
 ## 🔐 Security
 
@@ -321,57 +177,15 @@ Developed by TPM Team - Semester 6
 
 ---
 
-## 📊 Status Implementasi
+## 🔗 Quick Links
 
-**Progress**: 5/20 Tasks Complete (25%)
-
-### ✅ Completed Tasks
-
-- **Task 1**: Setup Proyek dan Infrastruktur
-  - Inisialisasi proyek Flutter dengan clean architecture (`lib/core/`, `lib/data/`, `lib/domain/`, `lib/presentation/`)
-  - Setup backend Golang dengan struktur modular (`cmd/`, `internal/`, `pkg/`, `configs/`)
-  - PostgreSQL dengan Docker (`docker-compose.yml`) + volume persistence
-  - Database schema 7 tabel + GORM AutoMigrate
-  - Testing framework: testify (Go) + flutter_test/mockito (Flutter)
-
-- **Task 2**: Autentikasi dan Keamanan Backend
-  - Auth Service: registrasi, login, JWT generation, bcrypt password hashing
-  - JWT middleware untuk proteksi endpoint
-  - User Profile API: CRUD, upload & kompresi foto profil, validasi data
-  - Property test: password hashing consistency
-  - Unit tests: validasi profil & upload foto
-
-- **Task 3**: Food Database dan API
-  - Model `Food` dengan nutrisi lengkap (kalori, protein, karbohidrat, lemak per 100g)
-  - Seeding data makanan MPASI dan makanan ibu
-  - API pencarian makanan dengan filter kategori
-  - Recipe API: CRUD, favorit, random recipe (untuk shake-to-recipe)
-  - Property test: nutrition calculation consistency
-
-- **Task 4**: Food Diary API
-  - Model `DiaryEntry` dengan dual profile (bayi & ibu)
-  - CRUD endpoints diary entries dengan kalkulasi nutrition summary harian
-  - Kategorisasi slot waktu: Makan Pagi, Siang, Malam, Selingan
-  - Endpoint sinkronisasi data offline dengan timestamp & conflict resolution
-  - Property test: nutrition tracking consistency
-
-- **Task 5**: Setup State Management dan Arsitektur Flutter
-  - Provider pattern dengan GetIt dependency injection
-  - Base providers untuk state management dengan error handling & loading states
-  - Secure storage (flutter_secure_storage) untuk JWT tokens
-  - HTTP client (Dio) dengan interceptors untuk auth & automatic token refresh
-  - Unit tests: secure storage functionality (27 tests) & HTTP client dengan mock responses (17 tests)
-  - Total 44 tests passing - validasi Requirements 1.4 & 1.7
-
-### 📋 Upcoming
-
-- **Task 6**: Autentikasi Flutter — AuthProvider, login/register screens, biometric authentication
-- **Task 7–9**: Fitur Utama — Food Diary UI, Diet Plan (BMR/TDEE), nutrition visualization
-- **Task 10–11**: Sensor & Resep — pedometer, shake detection, recipe management, favorit
-- **Task 12–14**: Integrasi Eksternal — LBS (Google Maps deep link), AI Chatbot (Gemini), Quiz Game, Notifikasi
-- **Task 15–17**: UI/UX & Offline — navigation, profile management, SQLite offline, data sync
-- **Task 18–20**: Testing & Finalisasi — integration tests, performance optimization, security audit
+- [📖 Full Documentation](./docs/)
+- [🚀 Getting Started](./docs/getting-started/)
+- [🔧 Backend API](./docs/backend/)
+- [📱 Flutter App](./docs/frontend/)
+- [💡 Implementation Guides](./docs/implementation/)
+- [🧪 Testing](./docs/testing/)
 
 ---
 
-**Last Updated**: April 27, 2026
+**Last Updated**: April 29, 2026

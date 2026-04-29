@@ -125,3 +125,7 @@ docker-compose ps
 ```
 
 Status `healthy` menandakan database siap digunakan.
+
+---
+
+**Next Step**: [Backend Setup](./backend-setup.md)
