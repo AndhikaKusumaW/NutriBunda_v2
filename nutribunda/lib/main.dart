@@ -3,13 +3,26 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'injection_container.dart' as di;
 import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/profile_provider.dart';
 import 'presentation/providers/food_diary_provider.dart';
 import 'presentation/providers/recipe_provider.dart';
 import 'presentation/providers/chat_provider.dart';
 import 'presentation/providers/quiz_provider.dart';
 import 'presentation/providers/notification_provider.dart';
+import 'presentation/pages/splash/splash_screen.dart';
+import 'presentation/pages/onboarding/onboarding_screen.dart';
 import 'presentation/pages/auth/login_screen.dart';
+import 'presentation/pages/auth/register_screen.dart';
+import 'presentation/pages/main_navigation.dart';
 import 'presentation/pages/dashboard/dashboard_screen.dart';
+import 'presentation/pages/diary/diary_screen.dart';
+import 'presentation/pages/profile/profile_screen.dart';
+import 'presentation/pages/chat/chat_screen.dart';
+import 'presentation/pages/quiz_screen.dart';
+import 'presentation/pages/diet_plan/diet_plan_screen.dart';
+import 'presentation/pages/recipe/favorite_recipes_screen.dart';
+import 'presentation/pages/settings/notification_settings_page.dart';
+import 'presentation/pages/settings/biometric_settings_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +45,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (_) => di.sl<AuthProvider>()..initializeAuth(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => di.sl<ProfileProvider>(),
         ),
         ChangeNotifierProvider(
           create: (_) => di.sl<FoodDiaryProvider>(),
@@ -59,30 +75,26 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        home: Consumer<AuthProvider>(
-          builder: (context, authProvider, child) {
-            // Show loading while initializing
-            if (authProvider.isLoading) {
-              return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-
-            // Show login screen if not authenticated
-            if (!authProvider.isAuthenticated) {
-              return const LoginScreen();
-            }
-
-            // Show dashboard if authenticated
-            return const DashboardScreen();
-          },
-        ),
+        // Use splash screen as initial route
+        initialRoute: '/',
+        // Define named routes for navigation
+        // Requirements: 13.1, 13.3, 13.4, 13.5, 13.6
         routes: {
+          '/': (context) => const SplashScreen(),
+          '/onboarding': (context) => const OnboardingScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/register': (context) => const RegisterScreen(),
+          '/main': (context) => const MainNavigation(),
           '/home': (context) => const DashboardScreen(),
           '/dashboard': (context) => const DashboardScreen(),
-          '/login': (context) => const LoginScreen(),
+          '/diary': (context) => const DiaryScreen(),
+          '/profile': (context) => const ProfileScreen(),
+          '/chat': (context) => const ChatScreen(),
+          '/quiz': (context) => const QuizScreen(),
+          '/diet-plan': (context) => const DietPlanScreen(),
+          '/favorites': (context) => const FavoriteRecipesScreen(),
+          '/settings/notifications': (context) => const NotificationSettingsPage(),
+          '/settings/biometric': (context) => const BiometricSettingsPage(),
         },
       ),
     );
