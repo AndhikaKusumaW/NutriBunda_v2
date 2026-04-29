@@ -13,6 +13,7 @@ import 'core/services/chat_service.dart';
 import 'core/services/quiz_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/pedometer_service.dart';
+import 'core/services/analytics_service.dart';
 
 // Providers
 import 'presentation/providers/auth_provider.dart';
@@ -112,6 +113,15 @@ Future<void> init() async {
   sl.registerLazySingleton<PedometerService>(
     () => PedometerService(),
   );
+  
+  // Analytics Service - untuk performance monitoring dan analytics
+  // Task 19.1 - Performance monitoring and analytics setup
+  sl.registerLazySingleton<AnalyticsService>(
+    () => AnalyticsService(),
+  );
+  
+  // Initialize analytics service
+  await sl<AnalyticsService>().initialize();
   
   // HTTP Client (Dio) - raw instance untuk custom usage
   sl.registerLazySingleton<Dio>(() {

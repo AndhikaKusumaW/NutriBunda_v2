@@ -12,15 +12,54 @@ import (
 )
 
 func setupTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	require.NoError(t, err)
 
-	// Run migrations
-	err = db.AutoMigrate(
-		&database.User{},
-		&database.Recipe{},
-		&database.FavoriteRecipe{},
-	)
+	// Manually create tables with SQLite-compatible schema
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			id TEXT PRIMARY KEY,
+			email VARCHAR(255) UNIQUE NOT NULL,
+			password_hash VARCHAR(255) NOT NULL,
+			full_name VARCHAR(255) NOT NULL,
+			weight DECIMAL(5,2),
+			height DECIMAL(5,2),
+			age INTEGER,
+			is_breastfeeding BOOLEAN DEFAULT 0,
+			activity_level VARCHAR(20) DEFAULT 'sedentary',
+			profile_image_url TEXT,
+			timezone VARCHAR(10) DEFAULT 'WIB',
+			created_at DATETIME,
+			updated_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS recipes (
+			id TEXT PRIMARY KEY,
+			name VARCHAR(255) NOT NULL,
+			ingredients TEXT NOT NULL,
+			instructions TEXT NOT NULL,
+			nutrition_info TEXT,
+			category VARCHAR(50) DEFAULT 'mpasi',
+			created_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS favorite_recipes (
+			id TEXT PRIMARY KEY,
+			user_id TEXT NOT NULL,
+			recipe_id TEXT NOT NULL,
+			created_at DATETIME,
+			updated_at DATETIME,
+			deleted_at DATETIME
+		)
+	`).Error
 	require.NoError(t, err)
 
 	return db

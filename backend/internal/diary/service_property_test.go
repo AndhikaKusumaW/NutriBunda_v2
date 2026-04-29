@@ -28,10 +28,64 @@ import (
 
 // setupPropertyTestDB creates an in-memory database for property testing
 func setupPropertyTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	require.NoError(t, err)
 
-	err = db.AutoMigrate(&database.User{}, &database.Food{}, &database.DiaryEntry{})
+	// Manually create tables with SQLite-compatible schema
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			id TEXT PRIMARY KEY,
+			email VARCHAR(255) UNIQUE NOT NULL,
+			password_hash VARCHAR(255) NOT NULL,
+			full_name VARCHAR(255) NOT NULL,
+			weight DECIMAL(5,2),
+			height DECIMAL(5,2),
+			age INTEGER,
+			is_breastfeeding BOOLEAN DEFAULT 0,
+			activity_level VARCHAR(20) DEFAULT 'sedentary',
+			profile_image_url TEXT,
+			timezone VARCHAR(10) DEFAULT 'WIB',
+			created_at DATETIME,
+			updated_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS foods (
+			id TEXT PRIMARY KEY,
+			name VARCHAR(255) NOT NULL,
+			category VARCHAR(50) NOT NULL,
+			calories_per100g DECIMAL(6,2) NOT NULL,
+			protein_per100g DECIMAL(5,2) NOT NULL,
+			carbs_per100g DECIMAL(5,2) NOT NULL,
+			fat_per100g DECIMAL(5,2) NOT NULL,
+			created_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS diary_entries (
+			id TEXT PRIMARY KEY,
+			user_id TEXT NOT NULL,
+			profile_type VARCHAR(10) NOT NULL,
+			food_id TEXT,
+			custom_food_name VARCHAR(255),
+			serving_size DECIMAL(6,2) NOT NULL,
+			meal_time VARCHAR(20) NOT NULL,
+			calories DECIMAL(6,2) NOT NULL,
+			protein DECIMAL(5,2) NOT NULL,
+			carbs DECIMAL(5,2) NOT NULL,
+			fat DECIMAL(5,2) NOT NULL,
+			entry_date DATE NOT NULL,
+			created_at DATETIME,
+			updated_at DATETIME,
+			deleted_at DATETIME
+		)
+	`).Error
 	require.NoError(t, err)
 
 	return db

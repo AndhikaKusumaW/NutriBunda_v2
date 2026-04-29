@@ -9,19 +9,36 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 // setupTestDB creates a test database connection
 func setupTestDB(t *testing.T) *gorm.DB {
-	// Use test database connection
-	dsn := "host=localhost user=nutribunda_user password=nutribunda_pass dbname=nutribunda_test port=5432 sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// Use in-memory SQLite for tests
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	require.NoError(t, err)
 
-	// Run migrations
-	err = db.AutoMigrate(&database.User{})
+	// Manually create tables with SQLite-compatible schema
+	err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			id TEXT PRIMARY KEY,
+			email VARCHAR(255) UNIQUE NOT NULL,
+			password_hash VARCHAR(255) NOT NULL,
+			full_name VARCHAR(255) NOT NULL,
+			weight DECIMAL(5,2),
+			height DECIMAL(5,2),
+			age INTEGER,
+			is_breastfeeding BOOLEAN DEFAULT 0,
+			activity_level VARCHAR(20) DEFAULT 'sedentary',
+			profile_image_url TEXT,
+			timezone VARCHAR(10) DEFAULT 'WIB',
+			created_at DATETIME,
+			updated_at DATETIME
+		)
+	`).Error
 	require.NoError(t, err)
 
 	return db
@@ -29,7 +46,10 @@ func setupTestDB(t *testing.T) *gorm.DB {
 
 // cleanupTestDB cleans up test data
 func cleanupTestDB(t *testing.T, db *gorm.DB) {
-	db.Exec("DELETE FROM users")
+	sqlDB, _ := db.DB()
+	if sqlDB != nil {
+		sqlDB.Close()
+	}
 }
 
 func TestNewService(t *testing.T) {

@@ -24,6 +24,7 @@ import 'presentation/pages/diet_plan/diet_plan_screen.dart';
 import 'presentation/pages/recipe/favorite_recipes_screen.dart';
 import 'presentation/pages/settings/notification_settings_page.dart';
 import 'presentation/pages/settings/biometric_settings_page.dart';
+import 'presentation/themes/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -72,13 +73,8 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'NutriBunda',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.green,
-            brightness: Brightness.light,
-          ),
-          useMaterial3: true,
-        ),
+        // Task 19.1 - Apply consistent theme across all screens
+        theme: AppTheme.lightTheme,
         // Use splash screen as initial route
         initialRoute: '/',
         // Define named routes for navigation

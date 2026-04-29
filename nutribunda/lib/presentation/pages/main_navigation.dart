@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/lbs_provider.dart';
 import '../../injection_container.dart' as di;
+import '../../core/utils/accessibility_helper.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'diary/diary_screen.dart';
 import 'lbs/lbs_screen.dart';
@@ -49,35 +50,68 @@ class _MainNavigationState extends State<MainNavigation> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-            tooltip: 'Dashboard dengan ringkasan nutrisi harian',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Diary',
-            tooltip: 'Pencatatan makanan bayi dan ibu',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Peta',
-            tooltip: 'Cari fasilitas kesehatan terdekat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
-            tooltip: 'Profil pengguna dan pengaturan',
-          ),
-        ],
+      bottomNavigationBar: Semantics(
+        label: 'Navigasi utama aplikasi',
+        hint: 'Pilih tab untuk berpindah halaman',
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+          items: [
+            BottomNavigationBarItem(
+              icon: Semantics(
+                label: AccessibilityHelper.navigationTabLabel(
+                  tabName: 'Home',
+                  index: 0,
+                  total: 4,
+                  isSelected: _currentIndex == 0,
+                ),
+                child: const Icon(Icons.home),
+              ),
+              label: 'Home',
+              tooltip: 'Dashboard dengan ringkasan nutrisi harian',
+            ),
+            BottomNavigationBarItem(
+              icon: Semantics(
+                label: AccessibilityHelper.navigationTabLabel(
+                  tabName: 'Diary',
+                  index: 1,
+                  total: 4,
+                  isSelected: _currentIndex == 1,
+                ),
+                child: const Icon(Icons.book),
+              ),
+              label: 'Diary',
+              tooltip: 'Pencatatan makanan bayi dan ibu',
+            ),
+            BottomNavigationBarItem(
+              icon: Semantics(
+                label: AccessibilityHelper.navigationTabLabel(
+                  tabName: 'Peta',
+                  index: 2,
+                  total: 4,
+                  isSelected: _currentIndex == 2,
+                ),
+                child: const Icon(Icons.map),
+              ),
+              label: 'Peta',
+              tooltip: 'Cari fasilitas kesehatan terdekat',
+            ),
+            BottomNavigationBarItem(
+              icon: Semantics(
+                label: AccessibilityHelper.navigationTabLabel(
+                  tabName: 'Profil',
+                  index: 3,
+                  total: 4,
+                  isSelected: _currentIndex == 3,
+                ),
+                child: const Icon(Icons.person),
+              ),
+              label: 'Profil',
+              tooltip: 'Profil pengguna dan pengaturan',
+            ),
+          ],
+        ),
       ),
     );
   }

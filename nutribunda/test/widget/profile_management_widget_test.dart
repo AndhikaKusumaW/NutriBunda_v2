@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -40,13 +39,14 @@ void main() {
         timezone: 'WIB',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        profileImageUrl: 'https://example.com/profile.jpg',
+        profileImageUrl: null, // Use null to avoid network image loading
       );
 
       // Setup default mock behaviors
       when(mockProfileProvider.isLoading).thenReturn(false);
       when(mockProfileProvider.user).thenReturn(testUser);
       when(mockProfileProvider.errorMessage).thenReturn(null);
+      when(mockProfileProvider.fetchProfile()).thenAnswer((_) async => true);
     });
 
     Widget createProfileScreenWidget() {
