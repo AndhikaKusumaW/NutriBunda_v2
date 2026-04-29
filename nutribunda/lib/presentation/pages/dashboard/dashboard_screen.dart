@@ -6,6 +6,9 @@ import '../../widgets/dashboard/nutrition_progress_bar.dart';
 import '../../widgets/dashboard/nutrition_chart.dart';
 import '../../widgets/shake_to_recipe_widget.dart';
 import '../recipe/favorite_recipes_screen.dart';
+import '../chat/chat_screen.dart';
+import '../quiz_screen.dart';
+import '../settings/notification_settings_page.dart';
 import '../../../core/services/nutrition_tracker_service.dart';
 import '../../../data/models/nutrition_summary.dart';
 
@@ -257,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -412,6 +415,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
             const SizedBox(height: 12),
+            // Quiz Game button
+            SizedBox(
+              width: double.infinity,
+              child: _buildQuickActionButton(
+                context,
+                'Kuis Gizi Bunda - Uji Pengetahuan',
+                Icons.quiz,
+                Colors.purple,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const QuizScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            // TanyaBunda AI button
+            SizedBox(
+              width: double.infinity,
+              child: _buildQuickActionButton(
+                context,
+                'TanyaBunda AI - Konsultasi Gizi',
+                Icons.smart_toy,
+                Colors.green,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChatScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
             // Favorite recipes button
             SizedBox(
               width: double.infinity,
@@ -425,6 +466,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const FavoriteRecipesScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Notification settings button
+            SizedBox(
+              width: double.infinity,
+              child: _buildQuickActionButton(
+                context,
+                'Pengaturan Notifikasi',
+                Icons.notifications_active,
+                Colors.orange,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationSettingsPage(),
                     ),
                   );
                 },
@@ -446,7 +506,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: color.withOpacity(0.1),
+        backgroundColor: color.withValues(alpha: 0.1),
         foregroundColor: color,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 16),

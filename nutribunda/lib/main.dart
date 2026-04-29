@@ -5,6 +5,9 @@ import 'injection_container.dart' as di;
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/food_diary_provider.dart';
 import 'presentation/providers/recipe_provider.dart';
+import 'presentation/providers/chat_provider.dart';
+import 'presentation/providers/quiz_provider.dart';
+import 'presentation/providers/notification_provider.dart';
 import 'presentation/pages/auth/login_screen.dart';
 import 'presentation/pages/dashboard/dashboard_screen.dart';
 
@@ -35,6 +38,15 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => di.sl<RecipeProvider>(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => di.sl<ChatProvider>(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => di.sl<QuizProvider>(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => di.sl<NotificationProvider>(),
         ),
       ],
       child: MaterialApp(
