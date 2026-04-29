@@ -308,10 +308,21 @@ Implementasi dibagi menjadi 6 fase utama:
     - Buat settings screen dengan logout functionality
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 13.5_
 
-  - [x] 15.3 Write UI tests untuk navigation flow
+  - [x] 15.3 Implementasi widget Aksi Cepat di HomeScreen
+    - Buat QuickActionsWidget dengan 4 tombol akses cepat
+    - Implementasi tombol "Kuis Gizi Bunda - Uji Pengetahuan" (warna ungu) yang membuka halaman Quiz_Game
+    - Implementasi tombol "TanyaBunda AI - Konsultasi Gizi" (warna hijau) yang membuka halaman TanyaBunda_AI chatbot
+    - Implementasi tombol "Resep Favorit" (warna merah) yang membuka halaman daftar resep favorit
+    - Implementasi tombol "Pengaturan Notifikasi" (warna kuning) yang membuka halaman pengaturan Notification_Service
+    - Implementasi layout responsif: grid 2x2 untuk layar normal, horizontal scrollable list untuk layar kecil
+    - Integrasi QuickActionsWidget ke HomeScreen bersama dengan ringkasan nutrisi dan diet plan
+    - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 14.9, 14.10_
+
+  - [x] 15.4 Write UI tests untuk navigation flow
     - Test bottom navigation functionality
     - Test profile management screens
-    - _Requirements: 12.1-12.5, 13.1-13.6_
+    - Test Quick Actions widget navigation
+    - _Requirements: 12.1-12.5, 13.1-13.6, 14.1-14.10_
 
 ### Fase 8: Offline Support dan Sinkronisasi
 
@@ -422,7 +433,7 @@ DB_SSLMODE=disable
 - **Core Features** (Fase 1-4): Autentikasi, Food Diary, Diet Plan - wajib untuk MVP
 - **Interactive Features** (Fase 5): Sensor integration, Recipe management - penting untuk user engagement  
 - **Advanced Features** (Fase 6): AI Chatbot, LBS, Quiz - nice-to-have untuk versi lengkap
-- **Polish** (Fase 7-9): UI/UX, Offline support, Testing - penting untuk production
+- **Polish** (Fase 7-9): UI/UX (termasuk widget Aksi Cepat dengan 4 tombol), Offline support, Testing - penting untuk production
 
 ### Dependencies dan Urutan
 - Backend API harus selesai sebelum frontend integration
@@ -442,5 +453,14 @@ DB_SSLMODE=disable
 - **Database**: PostgreSQL untuk server, SQLite untuk local storage
 - **Authentication**: JWT dengan bcrypt password hashing
 - **External APIs**: Gemini API (chatbot), Google Maps API (LBS)
+
+### Fitur Aksi Cepat (Quick Actions)
+Widget Aksi Cepat di halaman Home menyediakan akses cepat ke 4 fitur utama:
+1. **Kuis Gizi Bunda - Uji Pengetahuan** (Ungu) → Quiz_Game
+2. **TanyaBunda AI - Konsultasi Gizi** (Hijau) → TanyaBunda_AI chatbot
+3. **Resep Favorit** (Merah) → Daftar resep favorit
+4. **Pengaturan Notifikasi** (Kuning) → Pengaturan notifikasi
+
+Layout responsif: grid 2x2 untuk layar normal, horizontal scrollable untuk layar kecil.
 
 Setiap task mereferensikan requirements spesifik untuk traceability dan memastikan semua acceptance criteria terpenuhi dalam implementasi.

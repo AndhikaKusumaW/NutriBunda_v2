@@ -480,6 +480,400 @@ class MainNavigationWidget extends StatefulWidget {
 
 ---
 
+## Desain Fitur Aksi Cepat
+
+### Overview
+
+Fitur Aksi Cepat adalah widget yang ditampilkan di halaman Home (Dashboard) untuk memberikan akses cepat ke 4 fitur utama aplikasi. Widget ini dirancang dengan layout grid 2x2 atau horizontal scrollable list yang responsif terhadap ukuran layar perangkat.
+
+### Tombol Aksi Cepat
+
+Berdasarkan Requirement 14, fitur Aksi Cepat memiliki 4 tombol dengan warna dan fungsi yang berbeda:
+
+1. **Kuis Gizi Bunda - Uji Pengetahuan** (Warna: Ungu)
+   - Membuka halaman Quiz_Game
+   - Icon: `Icons.quiz` atau `Icons.psychology`
+   - Fungsi: Menguji pengetahuan pengguna tentang gizi melalui mini game trivia
+
+2. **TanyaBunda AI - Konsultasi Gizi** (Warna: Hijau)
+   - Membuka halaman TanyaBunda_AI chatbot
+   - Icon: `Icons.chat` atau `Icons.support_agent`
+   - Fungsi: Konsultasi dengan AI chatbot tentang gizi MPASI dan diet ibu
+
+3. **Resep Favorit** (Warna: Merah)
+   - Membuka halaman daftar resep favorit pengguna
+   - Icon: `Icons.favorite` atau `Icons.restaurant_menu`
+   - Fungsi: Menampilkan resep MPASI yang telah disimpan pengguna
+
+4. **Pengaturan Notifikasi** (Warna: Kuning)
+   - Membuka halaman pengaturan Notification_Service
+   - Icon: `Icons.notifications` atau `Icons.alarm`
+   - Fungsi: Mengatur jadwal notifikasi pengingat makan MPASI dan vitamin
+
+### Widget Implementation
+
+```dart
+class QuickActionsWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      margin: EdgeInsets.all(16),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Aksi Cepat',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16),
+            GridView.count(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.5,
+              children: [
+                _buildQuickActionButton(
+                  context,
+                  title: 'Kuis Gizi Bunda',
+                  subtitle: 'Uji Pengetahuan',
+                  icon: Icons.quiz,
+                  color: Colors.purple,
+                  onTap: () => Navigator.pushNamed(context, '/quiz'),
+                ),
+                _buildQuickActionButton(
+                  context,
+                  title: 'TanyaBunda AI',
+                  subtitle: 'Konsultasi Gizi',
+                  icon: Icons.chat,
+                  color: Colors.green,
+                  onTap: () => Navigator.pushNamed(context, '/chatbot'),
+                ),
+                _buildQuickActionButton(
+                  context,
+                  title: 'Resep Favorit',
+                  subtitle: '',
+                  icon: Icons.favorite,
+                  color: Colors.red,
+                  onTap: () => Navigator.pushNamed(context, '/favorites'),
+                ),
+                _buildQuickActionButton(
+                  context,
+                  title: 'Pengaturan Notifikasi',
+                  subtitle: '',
+                  icon: Icons.notifications,
+                  color: Colors.amber,
+                  onTap: () => Navigator.pushNamed(context, '/notifications'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        padding: EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: color,
+            ),
+            SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (subtitle.isNotEmpty) ...[
+              SizedBox(height: 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey[600],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### HomeScreen Integration
+
+Widget Aksi Cepat diintegrasikan ke dalam HomeScreen (Dashboard) bersama dengan ringkasan nutrisi harian:
+
+```dart
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('NutriBunda'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications),
+            onPressed: () => Navigator.pushNamed(context, '/notifications'),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Ringkasan Nutrisi Bayi
+            NutritionSummaryCard(profileType: 'baby'),
+            
+            // Ringkasan Diet Plan Ibu
+            DietPlanSummaryCard(),
+            
+            // Widget Aksi Cepat
+            QuickActionsWidget(),
+            
+            // Shake-to-Recipe Info
+            ShakeToRecipeInfoCard(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Responsive Design
+
+Untuk layar yang lebih kecil atau orientasi landscape, widget dapat beradaptasi menggunakan horizontal scrollable list:
+
+```dart
+class QuickActionsWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final useGrid = screenWidth > 400; // Threshold untuk grid vs list
+    
+    return Card(
+      elevation: 2,
+      margin: EdgeInsets.all(16),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Aksi Cepat',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16),
+            useGrid
+                ? _buildGridLayout(context)
+                : _buildHorizontalScrollLayout(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGridLayout(BuildContext context) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.5,
+      children: _buildQuickActionButtons(context),
+    );
+  }
+
+  Widget _buildHorizontalScrollLayout(BuildContext context) {
+    return SizedBox(
+      height: 120,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: _buildQuickActionButtons(context)
+            .map((button) => SizedBox(
+                  width: 160,
+                  child: button,
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  List<Widget> _buildQuickActionButtons(BuildContext context) {
+    return [
+      _buildQuickActionButton(
+        context,
+        title: 'Kuis Gizi Bunda',
+        subtitle: 'Uji Pengetahuan',
+        icon: Icons.quiz,
+        color: Colors.purple,
+        onTap: () => Navigator.pushNamed(context, '/quiz'),
+      ),
+      _buildQuickActionButton(
+        context,
+        title: 'TanyaBunda AI',
+        subtitle: 'Konsultasi Gizi',
+        icon: Icons.chat,
+        color: Colors.green,
+        onTap: () => Navigator.pushNamed(context, '/chatbot'),
+      ),
+      _buildQuickActionButton(
+        context,
+        title: 'Resep Favorit',
+        subtitle: '',
+        icon: Icons.favorite,
+        color: Colors.red,
+        onTap: () => Navigator.pushNamed(context, '/favorites'),
+      ),
+      _buildQuickActionButton(
+        context,
+        title: 'Pengaturan Notifikasi',
+        subtitle: '',
+        icon: Icons.notifications,
+        color: Colors.amber,
+        onTap: () => Navigator.pushNamed(context, '/notifications'),
+      ),
+    ];
+  }
+
+  Widget _buildQuickActionButton(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    // Implementation sama seperti sebelumnya
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        padding: EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 32, color: color),
+            SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (subtitle.isNotEmpty) ...[
+              SizedBox(height: 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey[600],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Color Scheme
+
+Warna yang digunakan untuk setiap tombol Aksi Cepat:
+
+```dart
+class QuickActionColors {
+  static const Color quiz = Colors.purple;           // #9C27B0
+  static const Color chatbot = Colors.green;         // #4CAF50
+  static const Color favorites = Colors.red;         // #F44336
+  static const Color notifications = Colors.amber;   // #FFC107
+}
+```
+
+### Navigation Routes
+
+Routes yang diperlukan untuk fitur Aksi Cepat:
+
+```dart
+class AppRoutes {
+  static const String home = '/';
+  static const String quiz = '/quiz';
+  static const String chatbot = '/chatbot';
+  static const String favorites = '/favorites';
+  static const String notifications = '/notifications';
+  
+  static Map<String, WidgetBuilder> getRoutes() {
+    return {
+      home: (context) => MainNavigationWidget(),
+      quiz: (context) => QuizGameScreen(),
+      chatbot: (context) => TanyaBundaAIScreen(),
+      favorites: (context) => FavoriteRecipesScreen(),
+      notifications: (context) => NotificationSettingsScreen(),
+    };
+  }
+}
+```
+
+---
+
 ## Desain Fitur Sensor
 
 ### Accelerometer (Shake Detection)

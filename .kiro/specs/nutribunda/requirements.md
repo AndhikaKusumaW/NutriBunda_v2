@@ -226,8 +226,27 @@ NutriBunda adalah aplikasi mobile Flutter yang berfungsi sebagai asisten pendamp
 #### Acceptance Criteria
 
 1. THE NutriBunda SHALL menampilkan bottom navigation bar yang memuat empat tab: Home (Dashboard), Diary (Pencatatan Makanan), Peta (LBS), dan Profil.
-2. WHEN pengguna menekan tab Home, THE NutriBunda SHALL menampilkan dashboard yang memuat ringkasan nutrisi harian bayi, ringkasan Diet Plan ibu, dan akses cepat ke fitur TanyaBunda AI.
+2. WHEN pengguna menekan tab Home, THE NutriBunda SHALL menampilkan dashboard yang memuat ringkasan nutrisi harian bayi, ringkasan Diet Plan ibu, dan fitur Aksi Cepat.
 3. WHEN pengguna menekan tab Diary, THE NutriBunda SHALL menampilkan halaman Food_Diary dengan pilihan untuk beralih antara profil Bayi dan profil Ibu.
 4. WHEN pengguna menekan tab Peta, THE NutriBunda SHALL menampilkan halaman LBS_Service dengan peta interaktif.
 5. WHEN pengguna menekan tab Profil, THE NutriBunda SHALL menampilkan halaman profil pengguna beserta tombol Logout.
 6. WHILE pengguna berada di halaman manapun dalam aplikasi, THE NutriBunda SHALL menampilkan bottom navigation bar secara konsisten.
+
+---
+
+### Requirement 14: Fitur Aksi Cepat
+
+**User Story:** Sebagai pengguna, saya ingin mengakses fitur-fitur penting aplikasi dengan cepat dari halaman utama, sehingga saya dapat menggunakan fungsi yang sering dipakai tanpa harus navigasi berlapis.
+
+#### Acceptance Criteria
+
+1. THE NutriBunda SHALL menampilkan widget Aksi Cepat di halaman Home (Dashboard) yang berisi 4 tombol akses cepat.
+2. THE NutriBunda SHALL menampilkan tombol "Kuis Gizi Bunda - Uji Pengetahuan" dengan warna ungu di widget Aksi Cepat.
+3. WHEN pengguna menekan tombol "Kuis Gizi Bunda - Uji Pengetahuan", THE NutriBunda SHALL membuka halaman Quiz_Game.
+4. THE NutriBunda SHALL menampilkan tombol "TanyaBunda AI - Konsultasi Gizi" dengan warna hijau di widget Aksi Cepat.
+5. WHEN pengguna menekan tombol "TanyaBunda AI - Konsultasi Gizi", THE NutriBunda SHALL membuka halaman TanyaBunda_AI chatbot.
+6. THE NutriBunda SHALL menampilkan tombol "Resep Favorit" dengan warna merah di widget Aksi Cepat.
+7. WHEN pengguna menekan tombol "Resep Favorit", THE NutriBunda SHALL membuka halaman daftar resep favorit pengguna.
+8. THE NutriBunda SHALL menampilkan tombol "Pengaturan Notifikasi" dengan warna kuning di widget Aksi Cepat.
+9. WHEN pengguna menekan tombol "Pengaturan Notifikasi", THE NutriBunda SHALL membuka halaman pengaturan Notification_Service.
+10. THE NutriBunda SHALL menampilkan keempat tombol Aksi Cepat dalam layout grid 2x2 atau horizontal scrollable list yang responsif terhadap ukuran layar perangkat.

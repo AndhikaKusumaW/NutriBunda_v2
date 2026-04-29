@@ -516,45 +516,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildQuickActionButton(
-                    context,
-                    'Tambah Makanan Bayi',
-                    Icons.child_care,
-                    Colors.blue,
-                    () {
-                      // Navigate to add diary entry for baby
-                      // TODO: Implement navigation
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Fitur akan segera tersedia'),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildQuickActionButton(
-                    context,
-                    'Tambah Makanan Ibu',
-                    Icons.person,
-                    Colors.pink,
-                    () {
-                      // Navigate to add diary entry for mother
-                      // TODO: Implement navigation
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Fitur akan segera tersedia'),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 12),
             // Quiz Game button
             SizedBox(
