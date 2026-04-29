@@ -295,17 +295,17 @@ class DietPlanProvider extends BaseProvider {
     return {
       'bmr': _bmr,
       'tdee': _tdee,
-      'target_calories': _targetCalories,
-      'consumed_calories': consumedCalories,
-      'calories_burned': _caloriesBurned,
-      'remaining_calories': getRemainingCalories(consumedCalories),
-      'progress_percentage': getCalorieProgress(consumedCalories),
-      'progress_color': getProgressColor(consumedCalories),
-      'is_exceeded': isCaloriesExceeded(consumedCalories),
-      'excess_amount': getCalorieExcess(consumedCalories),
+      'targetCalories': _targetCalories,
+      'consumedCalories': consumedCalories,
+      'caloriesBurned': _caloriesBurned,
+      'remainingCalories': getRemainingCalories(consumedCalories),
+      'progressPercentage': getCalorieProgress(consumedCalories),
+      'progressColor': getProgressColor(consumedCalories),
+      'isExceeded': isCaloriesExceeded(consumedCalories),
+      'excessAmount': getCalorieExcess(consumedCalories),
       'steps': _steps,
-      'can_calculate': canCalculateDietPlan,
-      'missing_data': missingProfileData,
+      'canCalculate': canCalculateDietPlan,
+      'missingData': missingProfileData,
     };
   }
 

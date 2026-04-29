@@ -5,9 +5,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/food_diary_provider.dart';
 import '../../widgets/diet_plan/physical_data_form.dart';
 import '../../widgets/diet_plan/diet_plan_dashboard.dart';
+import '../../widgets/diet_plan/pedometer_controls.dart';
 
 /// Diet Plan Screen - Main screen untuk Diet Plan ibu pasca-melahirkan
-/// Requirements: 5.8, 5.9, 5.10, 5.11 - Diet plan dashboard dengan progress tracking
+/// Requirements: 5.6, 5.7, 5.8, 5.9, 5.10, 5.11 - Diet plan dashboard dengan progress tracking dan pedometer
 class DietPlanScreen extends StatefulWidget {
   const DietPlanScreen({super.key});
 
@@ -38,6 +39,19 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
     final foodDiaryProvider = context.read<FoodDiaryProvider>();
     foodDiaryProvider.setSelectedProfile('mother');
     await foodDiaryProvider.loadEntries();
+    
+    // Requirements: 5.6, 5.8 - Auto-start pedometer tracking saat screen dibuka
+    if (dietPlanProvider.canCalculateDietPlan) {
+      dietPlanProvider.startPedometerTracking();
+    }
+  }
+
+  @override
+  void dispose() {
+    // Stop pedometer when leaving screen
+    final dietPlanProvider = context.read<DietPlanProvider>();
+    dietPlanProvider.stopPedometerTracking();
+    super.dispose();
   }
 
   @override
@@ -193,6 +207,10 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Pedometer Controls - Requirements: 5.6, 5.7, 5.8
+            const PedometerControls(),
+            const SizedBox(height: 16),
+
             // Diet Plan Dashboard
             DietPlanDashboard(
               onEditProfile: () {

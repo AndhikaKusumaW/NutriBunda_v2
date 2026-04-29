@@ -8,10 +8,12 @@ import 'calorie_progress_bar.dart';
 /// Requirements: 5.8, 5.9, 5.10 - Dashboard dengan ringkasan harian dan progress tracking
 class DietPlanDashboard extends StatelessWidget {
   final VoidCallback? onEditProfile;
+  final bool compact;
 
   const DietPlanDashboard({
     super.key,
     this.onEditProfile,
+    this.compact = false,
   });
 
   @override
@@ -28,20 +30,22 @@ class DietPlanDashboard extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Main summary card
+            // Main summary card (always show)
             _buildSummaryCard(context, dietPlanProvider, summary),
-            const SizedBox(height: 16),
-
-            // Calorie progress card
-            _buildCalorieProgressCard(
-              context,
-              dietPlanProvider,
-              consumedCalories,
-            ),
-            const SizedBox(height: 16),
-
-            // Detailed metrics cards
-            _buildMetricsGrid(context, summary),
+            
+            // Show full details only if not compact
+            if (!compact) ...[
+              const SizedBox(height: 16),
+              // Calorie progress card
+              _buildCalorieProgressCard(
+                context,
+                dietPlanProvider,
+                consumedCalories,
+              ),
+              const SizedBox(height: 16),
+              // Detailed metrics cards
+              _buildMetricsGrid(context, summary),
+            ],
           ],
         );
       },
@@ -139,7 +143,7 @@ class DietPlanDashboard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        summary['targetCalories'].toStringAsFixed(0),
+                        (summary['targetCalories'] ?? 0).toStringAsFixed(0),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 36,
@@ -315,7 +319,7 @@ class DietPlanDashboard extends StatelessWidget {
             Expanded(
               child: _buildMetricCard(
                 'BMR',
-                summary['bmr'].toStringAsFixed(0),
+                (summary['bmr'] ?? 0).toStringAsFixed(0),
                 'kkal',
                 Icons.local_fire_department,
                 Colors.orange,
@@ -326,7 +330,7 @@ class DietPlanDashboard extends StatelessWidget {
             Expanded(
               child: _buildMetricCard(
                 'TDEE',
-                summary['tdee'].toStringAsFixed(0),
+                (summary['tdee'] ?? 0).toStringAsFixed(0),
                 'kkal',
                 Icons.directions_run,
                 Colors.blue,
@@ -341,7 +345,7 @@ class DietPlanDashboard extends StatelessWidget {
             Expanded(
               child: _buildMetricCard(
                 'Langkah Kaki',
-                summary['steps'].toString(),
+                (summary['steps'] ?? 0).toString(),
                 'langkah',
                 Icons.directions_walk,
                 Colors.green,
@@ -352,7 +356,7 @@ class DietPlanDashboard extends StatelessWidget {
             Expanded(
               child: _buildMetricCard(
                 'Kalori Terbakar',
-                summary['caloriesBurned'].toStringAsFixed(1),
+                (summary['caloriesBurned'] ?? 0.0).toStringAsFixed(1),
                 'kkal',
                 Icons.whatshot,
                 Colors.red,

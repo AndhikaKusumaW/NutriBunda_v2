@@ -9,6 +9,7 @@ import 'presentation/providers/recipe_provider.dart';
 import 'presentation/providers/chat_provider.dart';
 import 'presentation/providers/quiz_provider.dart';
 import 'presentation/providers/notification_provider.dart';
+import 'presentation/providers/diet_plan_provider.dart';
 import 'presentation/pages/splash/splash_screen.dart';
 import 'presentation/pages/onboarding/onboarding_screen.dart';
 import 'presentation/pages/auth/login_screen.dart';
@@ -63,6 +64,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => di.sl<NotificationProvider>(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => di.sl<DietPlanProvider>(),
         ),
       ],
       child: MaterialApp(

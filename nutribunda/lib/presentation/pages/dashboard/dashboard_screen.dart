@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/food_diary_provider.dart';
+import '../../providers/diet_plan_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/dashboard/nutrition_progress_bar.dart';
 import '../../widgets/dashboard/nutrition_chart.dart';
 import '../../widgets/shake_to_recipe_widget.dart';
+import '../../widgets/diet_plan/pedometer_controls.dart';
+import '../../widgets/diet_plan/diet_plan_dashboard.dart';
 import '../recipe/favorite_recipes_screen.dart';
 import '../chat/chat_screen.dart';
 import '../quiz_screen.dart';
@@ -33,7 +37,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Load data for both profiles
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
+      _initializeDietPlan();
     });
+  }
+
+  Future<void> _initializeDietPlan() async {
+    final authProvider = context.read<AuthProvider>();
+    final dietPlanProvider = context.read<DietPlanProvider>();
+    
+    // Set user data from auth provider
+    if (authProvider.user != null) {
+      dietPlanProvider.setUser(authProvider.user!);
+    }
+    
+    // Auto-start pedometer tracking if profile data is complete
+    if (dietPlanProvider.canCalculateDietPlan) {
+      dietPlanProvider.startPedometerTracking();
+    }
   }
 
   Future<void> _loadData() async {
@@ -149,6 +169,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildDateHeader(context, provider),
               const SizedBox(height: 24),
 
+              // Diet Plan & Pedometer Section
+              _buildDietPlanSection(context),
+              const SizedBox(height: 24),
+
               // Baby nutrition summary
               if (_babySummary != null)
                 _buildProfileSection(
@@ -245,6 +269,102 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDietPlanSection(BuildContext context) {
+    return Consumer<DietPlanProvider>(
+      builder: (context, dietPlanProvider, child) {
+        // Check if user profile data is complete
+        if (!dietPlanProvider.canCalculateDietPlan) {
+          return Card(
+            elevation: 2,
+            color: Colors.blue[50],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.blue[300]!),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.directions_walk,
+                    size: 48,
+                    color: Colors.blue[700],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Diet Plan & Pedometer',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue[900],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Lengkapi data profil Anda (berat badan, tinggi badan, usia) untuk menggunakan fitur ini',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.blue[800],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // Navigate to profile screen
+                      Navigator.pushNamed(context, '/profile');
+                    },
+                    icon: const Icon(Icons.person),
+                    label: const Text('Lengkapi Profil'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[700],
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Show Diet Plan and Pedometer if profile is complete
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Row(
+              children: [
+                Icon(
+                  Icons.fitness_center,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Diet Plan & Aktivitas',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Pedometer Controls
+            const PedometerControls(),
+            const SizedBox(height: 16),
+
+            // Diet Plan Dashboard (compact version for home)
+            const DietPlanDashboard(
+              compact: true,
+            ),
+          ],
+        );
+      },
     );
   }
 

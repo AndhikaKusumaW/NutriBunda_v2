@@ -12,6 +12,7 @@ import 'core/services/maps_launcher_service.dart';
 import 'core/services/chat_service.dart';
 import 'core/services/quiz_service.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/pedometer_service.dart';
 
 // Providers
 import 'presentation/providers/auth_provider.dart';
@@ -22,6 +23,7 @@ import 'presentation/providers/lbs_provider.dart';
 import 'presentation/providers/chat_provider.dart';
 import 'presentation/providers/quiz_provider.dart';
 import 'presentation/providers/notification_provider.dart';
+import 'presentation/providers/diet_plan_provider.dart';
 
 /// Service Locator instance
 /// Digunakan untuk dependency injection di seluruh aplikasi
@@ -105,6 +107,12 @@ Future<void> init() async {
     () => NotificationService(),
   );
   
+  // Pedometer Service - untuk menghitung langkah kaki
+  // Requirements: 5.6, 5.7
+  sl.registerLazySingleton<PedometerService>(
+    () => PedometerService(),
+  );
+  
   // HTTP Client (Dio) - raw instance untuk custom usage
   sl.registerLazySingleton<Dio>(() {
     final dio = Dio(
@@ -182,6 +190,9 @@ Future<void> init() async {
     notificationService: sl(),
     prefs: sl(),
   ));
+  
+  // Diet Plan Provider - Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8
+  sl.registerFactory(() => DietPlanProvider());
   
   // ============================================================================
   // USE CASES - Business Logic

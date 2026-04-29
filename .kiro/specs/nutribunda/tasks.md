@@ -206,6 +206,15 @@ Implementasi dibagi menjadi 6 fase utama:
     - **Property 7: Shake detection debounce**
     - **Validates: Requirements 6.6**
 
+  - [x] 10.4 Implementasi UI dan kontrol untuk Pedometer
+    - Auto-start pedometer tracking saat Diet Plan screen dibuka
+    - Implementasi start/stop/reset controls untuk pedometer
+    - Buat UI untuk menampilkan status tracking (active/stopped)
+    - Implementasi permission handling UI untuk sensor akses
+    - Buat error handling dan user feedback untuk pedometer errors
+    - Tambahkan visual indicator untuk real-time step updates
+    - _Requirements: 5.6, 5.7, 5.8_
+
 - [x] 11. Implementasi Recipe dan Favorit
   - [x] 11.1 Buat RecipeProvider dan recipe screens
     - Implementasi RecipeProvider untuk manage resep
