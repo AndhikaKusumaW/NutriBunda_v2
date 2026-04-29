@@ -286,20 +286,20 @@ Implementasi dibagi menjadi 6 fase utama:
 
 ### Fase 7: UI/UX dan Navigation
 
-- [ ] 15. Implementasi navigation dan UI polish
-  - [ ] 15.1 Setup bottom navigation dan routing
+- [x] 15. Implementasi navigation dan UI polish
+  - [x] 15.1 Setup bottom navigation dan routing
     - Implementasi bottom navigation bar dengan 4 tabs
     - Setup navigation routing dengan named routes
     - Buat splash screen dan onboarding flow
     - _Requirements: 13.1, 13.3, 13.4, 13.5, 13.6_
 
-  - [ ] 15.2 Implementasi profile management UI
+  - [x] 15.2 Implementasi profile management UI
     - Buat ProfileProvider untuk manage user data
     - Implementasi UI untuk edit profile dengan photo upload
     - Buat settings screen dengan logout functionality
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 13.5_
 
-  - [ ] 15.3 Write UI tests untuk navigation flow
+  - [x] 15.3 Write UI tests untuk navigation flow
     - Test bottom navigation functionality
     - Test profile management screens
     - _Requirements: 12.1-12.5, 13.1-13.6_

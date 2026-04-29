@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:nutribunda/presentation/providers/lbs_provider.dart';
+import 'package:nutribunda/presentation/providers/profile_provider.dart';
+import 'package:nutribunda/presentation/providers/auth_provider.dart';
+import 'package:nutribunda/presentation/providers/food_diary_provider.dart';
+import 'package:nutribunda/presentation/providers/diet_plan_provider.dart';
+
+import 'test_helpers.mocks.dart';
+
+// Export mock classes for use in tests
+export 'test_helpers.mocks.dart';
 
 /// Helper functions for testing
 
@@ -284,3 +296,12 @@ class TestFoodBuilder {
     };
   }
 }
+// Mock annotations for generating mock classes
+@GenerateMocks([
+  LBSProvider,
+  ProfileProvider,
+  AuthProvider,
+  FoodDiaryProvider,
+  DietPlanProvider,
+])
+void main() {}

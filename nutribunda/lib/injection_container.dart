@@ -15,6 +15,7 @@ import 'core/services/notification_service.dart';
 
 // Providers
 import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/profile_provider.dart';
 import 'presentation/providers/food_diary_provider.dart';
 import 'presentation/providers/recipe_provider.dart';
 import 'presentation/providers/lbs_provider.dart';
@@ -143,6 +144,11 @@ Future<void> init() async {
     httpClient: sl(),
     secureStorage: sl(),
     biometricService: sl(),
+  ));
+  
+  // Profile Provider - Requirements: 12.1, 12.2, 12.3, 12.4, 12.5
+  sl.registerFactory(() => ProfileProvider(
+    httpClient: sl(),
   ));
   
   // Food Diary Provider - Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
