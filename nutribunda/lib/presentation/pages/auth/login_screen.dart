@@ -41,9 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await context.read<AuthProvider>().login(email, password);
 
     if (success && mounted) {
-      // Navigate to home screen
-      // This will be handled by the main.dart routing logic
-      Navigator.of(context).pushReplacementNamed('/home');
+      // Navigate to main navigation screen with bottom navigation bar
+      Navigator.of(context).pushReplacementNamed('/main');
     }
   }
 

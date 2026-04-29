@@ -29,10 +29,10 @@ class ApiConstants {
   
   // Gemini API endpoints
   static const String geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
-  static const String geminiModel = 'gemini-pro';
+  static const String geminiModel = 'gemini-2.0-flash-lite';
   // API Key should be configured via environment variable or secure config
   // For development, you can set it here temporarily, but NEVER commit the actual key
-  static const String geminiApiKey = 'YOUR_GEMINI_API_KEY_HERE';
+  static const String geminiApiKey = 'AIzaSyD1040yHulRXzN4VWvTu5ZZsA7_n27sdqM';
   
   // Timeout
   static const Duration connectionTimeout = Duration(seconds: 30);

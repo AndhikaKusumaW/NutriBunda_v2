@@ -50,8 +50,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
 
     if (success && mounted) {
-      // Navigate to home screen
-      Navigator.of(context).pushReplacementNamed('/home');
+      // Navigate to main navigation screen with bottom navigation bar
+      Navigator.of(context).pushReplacementNamed('/main');
     }
   }
 

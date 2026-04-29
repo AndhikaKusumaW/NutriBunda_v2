@@ -55,6 +55,7 @@ class _MainNavigationState extends State<MainNavigation> {
         onTap: _onTabTapped,
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
+        elevation: 8,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

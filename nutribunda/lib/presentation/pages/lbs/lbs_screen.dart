@@ -29,32 +29,55 @@ class _LBSScreenState extends State<LBSScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cari Fasilitas Kesehatan'),
-        elevation: 0,
-      ),
-      body: Consumer<LBSProvider>(
-        builder: (context, lbsProvider, child) {
-          // Loading state
-          if (lbsProvider.isLoadingLocation) {
-            return _buildLoadingState();
-          }
+    return Column(
+      children: [
+        // AppBar manual
+        Container(
+          color: Theme.of(context).colorScheme.primary,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: const [
+                  Text(
+                    'Cari Fasilitas Kesehatan',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Body
+        Expanded(
+          child: Consumer<LBSProvider>(
+            builder: (context, lbsProvider, child) {
+              // Loading state
+              if (lbsProvider.isLoadingLocation) {
+                return _buildLoadingState();
+              }
 
-          // Error state
-          if (lbsProvider.errorMessage != null) {
-            return _buildErrorState(context, lbsProvider);
-          }
+              // Error state
+              if (lbsProvider.errorMessage != null) {
+                return _buildErrorState(context, lbsProvider);
+              }
 
-          // No location state
-          if (lbsProvider.currentPosition == null) {
-            return _buildNoLocationState(context, lbsProvider);
-          }
+              // No location state
+              if (lbsProvider.currentPosition == null) {
+                return _buildNoLocationState(context, lbsProvider);
+              }
 
-          // Success state - show facility categories
-          return _buildFacilityCategories(context, lbsProvider);
-        },
-      ),
+              // Success state - show facility categories
+              return _buildFacilityCategories(context, lbsProvider);
+            },
+          ),
+        ),
+      ],
     );
   }
 

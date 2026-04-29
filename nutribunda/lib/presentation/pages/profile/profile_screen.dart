@@ -25,85 +25,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profil'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
+    return Column(
+      children: [
+        // AppBar manual dengan actions
+        Container(
+          color: Theme.of(context).colorScheme.primary,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const Text(
+                    'Profil',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.settings, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Body
+        Expanded(
+          child: Consumer<ProfileProvider>(
+            builder: (context, profileProvider, child) {
+              if (profileProvider.isLoading && profileProvider.user == null) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (profileProvider.errorMessage != null && profileProvider.user == null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(profileProvider.errorMessage!),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          profileProvider.fetchProfile();
+                        },
+                        child: const Text('Coba Lagi'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final user = profileProvider.user;
+
+              if (user == null) {
+                return const Center(
+                  child: Text('Data pengguna tidak tersedia'),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: () => profileProvider.fetchProfile(),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Profile Header
+                      _buildProfileHeader(context, user),
+
+                      const SizedBox(height: 24),
+
+                      // Profile Information
+                      _buildProfileInfo(context, user),
+
+                      const SizedBox(height: 24),
+
+                      // Edit Profile Button
+                      _buildEditProfileButton(context),
+                      
+                      // Bottom padding for bottom navigation bar
+                      const SizedBox(height: 80),
+                    ],
+                  ),
                 ),
               );
             },
           ),
-        ],
-      ),
-      body: Consumer<ProfileProvider>(
-        builder: (context, profileProvider, child) {
-          if (profileProvider.isLoading && profileProvider.user == null) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (profileProvider.errorMessage != null && profileProvider.user == null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(profileProvider.errorMessage!),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      profileProvider.fetchProfile();
-                    },
-                    child: const Text('Coba Lagi'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final user = profileProvider.user;
-
-          if (user == null) {
-            return const Center(
-              child: Text('Data pengguna tidak tersedia'),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () => profileProvider.fetchProfile(),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Profile Header
-                  _buildProfileHeader(context, user),
-
-                  const SizedBox(height: 24),
-
-                  // Profile Information
-                  _buildProfileInfo(context, user),
-
-                  const SizedBox(height: 24),
-
-                  // Edit Profile Button
-                  _buildEditProfileButton(context),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+        ),
+      ],
     );
   }
 

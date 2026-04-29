@@ -47,121 +47,163 @@ class _DiaryScreenState extends State<DiaryScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Food Diary'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Bayi', icon: Icon(Icons.child_care)),
-            Tab(text: 'Ibu', icon: Icon(Icons.person)),
-          ],
-        ),
-      ),
-      body: Consumer<FoodDiaryProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (provider.errorMessage != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-                  const SizedBox(height: 16),
-                  Text(
-                    provider.errorMessage!,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      provider.clearError();
-                      provider.loadEntries();
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Coba Lagi'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () => provider.loadEntries(),
-            child: CustomScrollView(
-              slivers: [
-                // Date Picker
-                SliverToBoxAdapter(
-                  child: _buildDatePicker(context, provider),
-                ),
-
-                // Nutrition Summary Card
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: NutritionSummaryCard(
-                      summary: provider.nutritionSummary,
-                      profileType: provider.selectedProfile,
-                    ),
-                  ),
-                ),
-
-                // Diary Entries by Meal Time
-                ..._buildMealTimeSections(context, provider),
-
-                // Empty state
-                if (provider.entries.isEmpty)
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.restaurant_menu,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Belum ada catatan makanan',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Tap tombol + untuk menambah',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
+    return Column(
+      children: [
+        // AppBar dengan TabBar
+        Container(
+          color: Theme.of(context).colorScheme.primary,
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                // Title
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: const [
+                      Text(
+                        'Food Diary',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-
-                // Bottom padding
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 80),
+                ),
+                // TabBar
+                TabBar(
+                  controller: _tabController,
+                  indicatorColor: Colors.white,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white70,
+                  tabs: const [
+                    Tab(text: 'Bayi', icon: Icon(Icons.child_care)),
+                    Tab(text: 'Ibu', icon: Icon(Icons.person)),
+                  ],
                 ),
               ],
             ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToAddEntry(context),
-        child: const Icon(Icons.add),
-        tooltip: 'Tambah Makanan',
-      ),
+          ),
+        ),
+        // Body
+        Expanded(
+          child: Stack(
+            children: [
+              Consumer<FoodDiaryProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (provider.errorMessage != null) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                          const SizedBox(height: 16),
+                          Text(
+                            provider.errorMessage!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              provider.clearError();
+                              provider.loadEntries();
+                            },
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Coba Lagi'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () => provider.loadEntries(),
+                    child: CustomScrollView(
+                      slivers: [
+                        // Date Picker
+                        SliverToBoxAdapter(
+                          child: _buildDatePicker(context, provider),
+                        ),
+
+                        // Nutrition Summary Card
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: NutritionSummaryCard(
+                              summary: provider.nutritionSummary,
+                              profileType: provider.selectedProfile,
+                            ),
+                          ),
+                        ),
+
+                        // Diary Entries by Meal Time
+                        ..._buildMealTimeSections(context, provider),
+
+                        // Empty state
+                        if (provider.entries.isEmpty)
+                          SliverFillRemaining(
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.restaurant_menu,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Belum ada catatan makanan',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Tap tombol + untuk menambah',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        // Bottom padding for FAB and bottom nav
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 160),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              // FloatingActionButton positioned manually
+              Positioned(
+                right: 16,
+                bottom: 80, // Above bottom navigation bar
+                child: FloatingActionButton(
+                  onPressed: () => _navigateToAddEntry(context),
+                  tooltip: 'Tambah Makanan',
+                  child: const Icon(Icons.add),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
