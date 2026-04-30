@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import '../constants/api_constants.dart';
 import '../errors/exceptions.dart';
 import 'secure_storage_service.dart';
@@ -297,11 +298,22 @@ class HttpClientService {
     CancelToken? cancelToken,
   }) async {
     try {
-      final fileName = filePath.split('/').last;
+      final fileName = File(filePath).uri.pathSegments.last;
+      
+      // Tentukan tipe konten berdasarkan ekstensi file
+      final ext = fileName.split('.').last.toLowerCase();
+      MediaType? contentType;
+      if (ext == 'png') {
+        contentType = MediaType('image', 'png');
+      } else if (ext == 'jpg' || ext == 'jpeg') {
+        contentType = MediaType('image', 'jpeg');
+      }
+
       final formData = FormData.fromMap({
         fieldName: await MultipartFile.fromFile(
           filePath,
           filename: fileName,
+          contentType: contentType,
         ),
         ...?data,
       });

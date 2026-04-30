@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/lbs_provider.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../../core/services/lbs_service.dart';
 
-/// Screen untuk Location-Based Service (LBS)
-/// 
-/// Menampilkan:
-/// - Status lokasi pengguna saat ini
-/// - Grid 4 kategori fasilitas kesehatan
-/// - Error handling dan loading states
-/// 
-/// **Validates: Requirements 8.1-8.7**
 class LBSScreen extends StatefulWidget {
   const LBSScreen({super.key});
 
@@ -18,14 +10,96 @@ class LBSScreen extends StatefulWidget {
 }
 
 class _LBSScreenState extends State<LBSScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Ambil lokasi saat screen dibuka
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LBSProvider>().fetchCurrentLocation();
+  static const _pink = Color(0xFFE91E8C);
+
+  final LbsService _lbsService = LbsService();
+
+  bool _isLoading = false;
+  String? _statusMessage;
+
+  // ──────────────────────────────────────────
+  // ACTIONS
+  // ──────────────────────────────────────────
+
+  Future<void> _getLocationAndOpen(String facilityType) async {
+    setState(() {
+      _isLoading = true;
+      _statusMessage = null;
     });
+
+    final serviceEnabled = await _lbsService.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showDialog(
+          'Layanan Lokasi Nonaktif',
+          'Aktifkan GPS / Layanan Lokasi di pengaturan perangkat kamu, lalu coba lagi.',
+        );
+      }
+      return;
+    }
+
+    final position = await _lbsService.getCurrentPosition();
+
+    if (!mounted) return;
+
+    if (position == null) {
+      final permission = await _lbsService.checkPermission();
+      setState(() => _isLoading = false);
+      if (permission == LocationPermission.deniedForever) {
+        _showDialog(
+          'Izin Lokasi Ditolak Permanen',
+          'Buka Pengaturan → Aplikasi → NutriBunda → Izin, lalu aktifkan izin Lokasi.',
+        );
+      } else {
+        _showDialog(
+          'Izin Lokasi Diperlukan',
+          'NutriBunda memerlukan izin lokasi untuk menemukan fasilitas kesehatan terdekat. '
+              'Silakan izinkan akses lokasi saat diminta.',
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = false;
+      _statusMessage =
+          'Lokasi: ${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}';
+    });
+
+    await _lbsService.openNearbyByType(
+        position.latitude, position.longitude, facilityType);
   }
+
+  void _showDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Text(content,
+            style: const TextStyle(fontSize: 14, height: 1.5)),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _pink,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              elevation: 0,
+            ),
+            child: const Text('Mengerti'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // BUILD
+  // ──────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +115,7 @@ class _LBSScreenState extends State<LBSScreen> {
               child: Row(
                 children: const [
                   Text(
-                    'Cari Fasilitas Kesehatan',
+                    'Peta Fasilitas Kesehatan',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -55,374 +129,233 @@ class _LBSScreenState extends State<LBSScreen> {
         ),
         // Body
         Expanded(
-          child: Consumer<LBSProvider>(
-            builder: (context, lbsProvider, child) {
-              // Loading state
-              if (lbsProvider.isLoadingLocation) {
-                return _buildLoadingState();
-              }
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Ikon lokasi besar ──
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: _pink.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.location_on_rounded,
+                        size: 72, color: _pink),
+                  ),
+                ),
+                const SizedBox(height: 24),
 
-              // Error state
-              if (lbsProvider.errorMessage != null) {
-                return _buildErrorState(context, lbsProvider);
-              }
+                // ── Judul & deskripsi ──
+                const Text(
+                  'Temukan Fasilitas Kesehatan',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Gunakan lokasi GPS kamu untuk menemukan rumah sakit, puskesmas, dan apotek terdekat melalui Google Maps.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 13, color: Colors.grey.shade500, height: 1.5),
+                ),
+                const SizedBox(height: 32),
 
-              // No location state
-              if (lbsProvider.currentPosition == null) {
-                return _buildNoLocationState(context, lbsProvider);
-              }
+                // ── Tombol utama: Gunakan Lokasi Saya ──
+                ElevatedButton.icon(
+                  onPressed:
+                      _isLoading ? null : () => _getLocationAndOpen('puskesmas terdekat'),
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.my_location_rounded, size: 20),
+                  label: Text(
+                    _isLoading ? 'Mendapatkan Lokasi...' : 'Gunakan Lokasi Saya',
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _pink,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: _pink.withValues(alpha: 0.5),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
 
-              // Success state - show facility categories
-              return _buildFacilityCategories(context, lbsProvider);
-            },
+                const SizedBox(height: 20),
+
+                // ── 3 tombol kategori fasilitas ──
+                const Text(
+                  'Cari berdasarkan kategori:',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FacilityButton(
+                        emoji: '🏥',
+                        label: 'Rumah\nSakit',
+                        onTap: _isLoading
+                            ? null
+                            : () => _getLocationAndOpen('rumah sakit terdekat'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _FacilityButton(
+                        emoji: '🏪',
+                        label: 'Puskesmas',
+                        onTap: _isLoading
+                            ? null
+                            : () => _getLocationAndOpen('puskesmas terdekat'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _FacilityButton(
+                        emoji: '💊',
+                        label: 'Apotek',
+                        onTap: _isLoading
+                            ? null
+                            : () => _getLocationAndOpen('apotek terdekat'),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── Status lokasi (muncul jika sudah dapat posisi) ──
+                if (_statusMessage != null) ...[
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.gps_fixed_rounded,
+                            color: Colors.green.shade600, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _statusMessage!,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 24),
+
+                // ── Catatan footer ──
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade100),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          color: Colors.blue.shade400, size: 16),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Hasil pencarian akan dibuka di Google Maps. Pastikan Google Maps sudah terpasang di perangkatmu.',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue.shade700,
+                              height: 1.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
+}
 
-  /// Loading state widget
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text(
-            'Mendapatkan lokasi Anda...',
-            style: TextStyle(fontSize: 16),
+// ──────────────────────────────────────────
+// WIDGET: Tombol kategori fasilitas
+// ──────────────────────────────────────────
+
+class _FacilityButton extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final VoidCallback? onTap;
+
+  const _FacilityButton({
+    required this.emoji,
+    required this.label,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedOpacity(
+        opacity: onTap == null ? 0.5 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          padding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-
-  /// Error state widget
-  Widget _buildErrorState(BuildContext context, LBSProvider provider) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              provider.errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            // Show appropriate action button based on error type
-            if (provider.errorMessage!.contains('permanen'))
-              ElevatedButton.icon(
-                onPressed: () {
-                  provider.openAppSettings();
-                },
-                icon: const Icon(Icons.settings),
-                label: const Text('Buka Pengaturan'),
-              )
-            else if (provider.errorMessage!.contains('GPS') ||
-                provider.errorMessage!.contains('Layanan lokasi'))
-              ElevatedButton.icon(
-                onPressed: () {
-                  provider.openLocationSettings();
-                },
-                icon: const Icon(Icons.location_on),
-                label: const Text('Aktifkan GPS'),
-              )
-            else
-              ElevatedButton.icon(
-                onPressed: () {
-                  provider.fetchCurrentLocation();
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Coba Lagi'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 28)),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    height: 1.3),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// No location state widget
-  Widget _buildNoLocationState(BuildContext context, LBSProvider provider) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.location_off,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Lokasi tidak tersedia',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Silakan aktifkan layanan lokasi untuk menggunakan fitur ini',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                provider.fetchCurrentLocation();
-              },
-              icon: const Icon(Icons.refresh),
-              label: const Text('Coba Lagi'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Main content - facility categories grid
-  Widget _buildFacilityCategories(BuildContext context, LBSProvider provider) {
-    // Define facility categories with icons and colors
-    // **Validates: Requirement 8.3** - 4 kategori fasilitas
-    final categories = [
-      {
-        'key': 'Rumah Sakit',
-        'icon': Icons.local_hospital,
-        'color': Colors.red,
-      },
-      {
-        'key': 'Puskesmas',
-        'icon': Icons.medical_services,
-        'color': Colors.blue,
-      },
-      {
-        'key': 'Posyandu',
-        'icon': Icons.child_care,
-        'color': Colors.green,
-      },
-      {
-        'key': 'Apotek',
-        'icon': Icons.medication,
-        'color': Colors.orange,
-      },
-    ];
-
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Location info card
-            _buildLocationInfoCard(provider),
-            const SizedBox(height: 24),
-            
-            // Section title
-            const Text(
-              'Pilih Fasilitas Kesehatan',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Grid of facility categories
-            // **Validates: Requirement 8.3** - UI dengan 4 kategori dalam grid cards
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.2,
-              ),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                return _buildCategoryCard(
-                  context,
-                  provider,
-                  category['key'] as String,
-                  category['icon'] as IconData,
-                  category['color'] as Color,
-                );
-              },
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Info text
-            _buildInfoText(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Location info card showing current GPS coordinates
-  Widget _buildLocationInfoCard(LBSProvider provider) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(
-              Icons.location_on,
-              color: Colors.green[600],
-              size: 32,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Lokasi Anda',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${provider.currentPosition!.latitude.toStringAsFixed(6)}, '
-                    '${provider.currentPosition!.longitude.toStringAsFixed(6)}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                provider.fetchCurrentLocation();
-              },
-              tooltip: 'Perbarui lokasi',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Individual facility category card
-  /// 
-  /// **Validates: Requirements 8.4, 8.5, 8.6** - Membuka Google Maps dengan deep link
-  Widget _buildCategoryCard(
-    BuildContext context,
-    LBSProvider provider,
-    String categoryKey,
-    IconData icon,
-    Color color,
-  ) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: () async {
-          // Show loading indicator
-          if (!context.mounted) return;
-          
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => const Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-
-          // Search facility
-          final success = await provider.searchFacility(categoryKey);
-
-          // Close loading indicator
-          if (context.mounted) {
-            Navigator.of(context).pop();
-          }
-
-          // Show error if failed
-          if (!success && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  provider.errorMessage ?? 'Gagal membuka Google Maps',
-                ),
-                backgroundColor: Colors.red,
-                action: SnackBarAction(
-                  label: 'Tutup',
-                  textColor: Colors.white,
-                  onPressed: () {},
-                ),
-              ),
-            );
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 48,
-              color: color,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              categoryKey,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Info text at the bottom
-  Widget _buildInfoText() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: Colors.blue[700],
-            size: 24,
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Ketuk kategori untuk membuka Google Maps dan mencari fasilitas terdekat',
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.blue[900],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

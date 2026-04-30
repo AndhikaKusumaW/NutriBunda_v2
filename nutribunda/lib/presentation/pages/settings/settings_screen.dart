@@ -37,24 +37,7 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           
-          const Divider(height: 1),
-          
-          ListTile(
-            leading: const Icon(Icons.fingerprint),
-            title: const Text('Autentikasi Biometrik'),
-            subtitle: const Text('Sidik jari dan Face ID'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const BiometricSettingsPage(),
-                ),
-              );
-            },
-          ),
-          
-          const Divider(height: 1),
+
           
           // About Section
           _buildSectionHeader('Tentang'),
@@ -111,27 +94,30 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showLogoutDialog(BuildContext context, AuthProvider authProvider) {
+    // Capture outer context BEFORE the dialog builder shadows it
+    final outerContext = context;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Logout'),
         content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Batal'),
           ),
           ElevatedButton(
             onPressed: () async {
-              // Close dialog
-              Navigator.pop(context);
-              
+              // Close dialog first
+              Navigator.pop(dialogContext);
+
               // Perform logout
               await authProvider.logout();
-              
-              // Navigate to login screen and clear navigation stack
-              if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
+
+              // Navigate to login using the outer (settings screen) context
+              if (outerContext.mounted) {
+                Navigator.of(outerContext).pushNamedAndRemoveUntil(
                   '/login',
                   (route) => false,
                 );

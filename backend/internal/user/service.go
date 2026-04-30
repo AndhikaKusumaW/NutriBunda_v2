@@ -106,12 +106,13 @@ func (s *Service) UpdateProfile(userID uuid.UUID, req *UpdateProfileRequest) (*d
 	// Validate timezone if provided
 	if req.Timezone != nil {
 		validTimezones := map[string]bool{
-			"WIB":  true,
-			"WITA": true,
-			"WIT":  true,
+			"WIB":    true,
+			"WITA":   true,
+			"WIT":    true,
+			"London": true,
 		}
 		if !validTimezones[*req.Timezone] {
-			return nil, errors.New("invalid timezone, must be WIB, WITA, or WIT")
+			return nil, errors.New("invalid timezone, must be WIB, WITA, WIT, or London")
 		}
 	}
 

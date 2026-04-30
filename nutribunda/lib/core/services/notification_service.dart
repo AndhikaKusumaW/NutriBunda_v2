@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 
 /// Service untuk mengelola notifikasi lokal dengan dukungan timezone
 /// Menangani pengingat MPASI dan vitamin sesuai Requirements 11.1-11.6
@@ -112,9 +113,31 @@ class NotificationService {
   /// Requirements: 11.6 - Handle notification permissions properly
   Future<bool> requestPermissions() async {
     try {
-      // For modern versions, permissions are handled automatically
-      // when scheduling notifications. We'll just return true here
-      // and let the system handle permission requests.
+      // Request Android exact alarm permission
+      final androidPlugin = _notifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      if (androidPlugin != null) {
+        final bool? granted =
+            await androidPlugin.requestNotificationsPermission();
+        return granted ?? false;
+      }
+
+      // Request iOS permission
+      final iosPlugin = _notifications
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+
+      if (iosPlugin != null) {
+        final bool? granted = await iosPlugin.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        return granted ?? false;
+      }
+
       return true;
     } catch (e) {
       debugPrint('Error requesting notification permissions: $e');
@@ -266,7 +289,7 @@ class NotificationService {
   }
 
   /// Get timezone location
-  /// Requirements: 11.3 - Support timezone selection: WIB (UTC+7), WITA (UTC+8), WIT (UTC+9)
+  /// Requirements: 11.3 - Support timezone selection: WIB (UTC+7), WITA (UTC+8), WIT (UTC+9), London (UTC+0/+1)
   tz.Location _getTimezoneLocation(String timezone) {
     switch (timezone.toUpperCase()) {
       case 'WIB':
@@ -275,6 +298,8 @@ class NotificationService {
         return tz.getLocation('Asia/Makassar'); // UTC+8
       case 'WIT':
         return tz.getLocation('Asia/Jayapura'); // UTC+9
+      case 'LONDON':
+        return tz.getLocation('Europe/London'); // UTC+0 / UTC+1 (BST)
       default:
         return tz.getLocation('Asia/Jakarta'); // Default to WIB
     }
@@ -348,8 +373,22 @@ class NotificationService {
   /// Check if notifications are enabled
   Future<bool> areNotificationsEnabled() async {
     try {
-      // For simplicity, assume notifications are enabled
-      // In a real app, you might want to check platform-specific settings
+      if (Platform.isAndroid) {
+        final androidPlugin = _notifications
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+        if (androidPlugin != null) {
+          final granted = await androidPlugin.areNotificationsEnabled();
+          return granted ?? false;
+        }
+      } else if (Platform.isIOS) {
+        final iosPlugin = _notifications
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>();
+        // Unfortunately iOS doesn't provide a direct synchronous check in this plugin easily
+        // without requesting, but we can assume it's handled by requestPermissions
+        return true; 
+      }
       return true;
     } catch (e) {
       debugPrint('Error checking notification status: $e');

@@ -53,12 +53,13 @@ class NotificationProvider extends BaseProvider {
       ];
 
   // Timezone options
-  List<String> get timezoneOptions => ['WIB', 'WITA', 'WIT'];
+  List<String> get timezoneOptions => ['WIB', 'WITA', 'WIT', 'London'];
 
   Map<String, String> get timezoneDescriptions => {
         'WIB': 'Waktu Indonesia Barat (UTC+7)',
         'WITA': 'Waktu Indonesia Tengah (UTC+8)',
         'WIT': 'Waktu Indonesia Timur (UTC+9)',
+        'London': 'London, Inggris (UTC+0/UTC+1 BST)',
       };
 
   /// Initialize notification provider

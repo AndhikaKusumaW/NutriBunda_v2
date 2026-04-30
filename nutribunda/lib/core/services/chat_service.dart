@@ -40,7 +40,10 @@ DISCLAIMER:
 Selalu ingatkan bahwa informasi yang diberikan bersifat edukatif dan bukan pengganti konsultasi medis profesional.
 ''';
 
+  /// ChatService selalu membuat Dio-nya sendiri agar tidak
+  /// menimpa konfigurasi Dio backend yang digunakan HttpClientService.
   ChatService({Dio? dio}) : _dio = dio ?? Dio() {
+    // Selalu konfigurasi ulang agar baseUrl mengarah ke Gemini
     _configureDio();
   }
 
@@ -48,8 +51,9 @@ Selalu ingatkan bahwa informasi yang diberikan bersifat edukatif dan bukan pengg
   void _configureDio() {
     _dio.options = BaseOptions(
       baseUrl: ApiConstants.geminiBaseUrl,
-      connectTimeout: ApiConstants.geminiTimeout,
-      receiveTimeout: ApiConstants.geminiTimeout,
+      // Diperpanjang ke 30 detik agar tidak premature timeout
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
       headers: {
         'Content-Type': 'application/json',
       },

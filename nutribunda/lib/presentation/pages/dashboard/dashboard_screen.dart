@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 import '../../providers/food_diary_provider.dart';
 import '../../providers/diet_plan_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -13,6 +14,7 @@ import '../recipe/favorite_recipes_screen.dart';
 import '../chat/chat_screen.dart';
 import '../quiz_screen.dart';
 import '../settings/notification_settings_page.dart';
+import 'notification_center_screen.dart';
 import '../../../core/services/nutrition_tracker_service.dart';
 import '../../../data/models/nutrition_summary.dart';
 
@@ -30,6 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   NutritionSummary? _motherSummary;
   bool _isLoading = false;
   String? _errorMessage;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -39,6 +42,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _loadData();
       _initializeDietPlan();
     });
+
+    // Auto-refresh setiap 60 detik
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      if (mounted) _loadData();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh ketika kembali ke halaman ini (misalnya setelah tambah diary)
+    // Hanya refresh jika sudah ada data sebelumnya (bukan load pertama)
+    if (_babySummary != null || _motherSummary != null) {
+      _loadData();
+    }
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _initializeDietPlan() async {
@@ -107,6 +131,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationCenterScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -125,34 +161,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: 400,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
       );
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[300],
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: 400,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red[300],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: _loadData,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Coba Lagi'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Coba Lagi'),
-            ),
-          ],
+          ),
         ),
       );
     }

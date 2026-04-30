@@ -23,8 +23,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isBreastfeeding = false;
   String _activityLevel = 'sedentary';
   String _timezone = 'WIB';
-  File? _selectedImage;
-  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -56,59 +54,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
-  /// Pick image from gallery or camera
-  /// Requirements: 12.2 - Memilih gambar dari galeri atau kamera
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      final XFile? pickedFile = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
-      );
 
-      if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memilih gambar: $e')),
-        );
-      }
-    }
-  }
-
-  /// Show image source selection dialog
-  void _showImageSourceDialog() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Pilih dari Galeri'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Ambil Foto'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.camera);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   /// Save profile changes
   Future<void> _saveProfile() async {
@@ -137,32 +83,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (!mounted) return;
 
     if (success) {
-      // Upload image if selected
-      if (_selectedImage != null) {
-        final uploadSuccess = await profileProvider.uploadProfileImage(_selectedImage!);
-        
-        if (!mounted) return;
-
-        if (uploadSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profil dan foto berhasil diperbarui')),
-          );
-          Navigator.pop(context);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                profileProvider.errorMessage ?? 'Gagal mengunggah foto',
-              ),
-            ),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profil berhasil diperbarui')),
-        );
-        Navigator.pop(context);
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profil berhasil diperbarui')),
+      );
+      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -197,10 +121,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Profile Image Section
-                  _buildProfileImageSection(profileProvider),
 
-                  const SizedBox(height: 24),
 
                   // Name Field
                   TextFormField(
@@ -373,6 +294,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         value: 'WIT',
                         child: Text('WIT (UTC+9)'),
                       ),
+                      DropdownMenuItem(
+                        value: 'London',
+                        child: Text('London (UTC+0/+1)'),
+                      ),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -408,66 +333,4 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildProfileImageSection(ProfileProvider profileProvider) {
-    final user = profileProvider.user;
-    
-    return Center(
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                backgroundImage: _selectedImage != null
-                    ? FileImage(_selectedImage!)
-                    : (user?.profileImageUrl != null
-                        ? NetworkImage(user!.profileImageUrl!)
-                        : null) as ImageProvider?,
-                child: _selectedImage == null && user?.profileImageUrl == null
-                    ? const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.white,
-                      )
-                    : null,
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: CircleAvatar(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  child: IconButton(
-                    icon: const Icon(Icons.camera_alt, size: 20),
-                    color: Colors.white,
-                    onPressed: _showImageSourceDialog,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap untuk mengubah foto profil',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 12,
-            ),
-          ),
-          if (_selectedImage != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                'Foto baru dipilih',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 }
