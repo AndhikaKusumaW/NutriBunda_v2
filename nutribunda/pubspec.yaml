@@ -45,8 +45,8 @@ dependencies:
   connectivity_plus: ^6.1.0
 
   # Notifications
-  flutter_local_notifications: ^18.0.1
-  timezone: ^0.9.4
+  flutter_local_notifications: ^20.0.0
+  timezone: ^0.10.0
 
   # Gemini AI
   google_generative_ai: ^0.4.6

@@ -1,6 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 
@@ -35,6 +35,7 @@ class NotificationService {
     try {
       // Initialize timezone data
       tz.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
 
       // Android initialization settings
       const AndroidInitializationSettings androidSettings =
@@ -54,7 +55,7 @@ class NotificationService {
       );
 
       final bool? initialized = await _notifications.initialize(
-        initSettings,
+        settings: initSettings,
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
 
@@ -203,7 +204,7 @@ class NotificationService {
   }) async {
     try {
       // Cancel existing vitamin notification
-      await _notifications.cancel(_vitaminReminderId);
+      await _notifications.cancel(id: _vitaminReminderId);
 
       if (enabled) {
         await _scheduleRepeatingNotification(
@@ -276,16 +277,14 @@ class NotificationService {
       );
 
       await _notifications.zonedSchedule(
-        id,
-        title,
-        body,
-        scheduledDate,
-        notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.time,
-        payload: payload,
+       id: id, 
+       title: title,
+       body: body, 
+       scheduledDate: scheduledDate,
+       notificationDetails: notificationDetails,
+       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+       matchDateTimeComponents: DateTimeComponents.time,
+       payload: payload,
       );
 
       debugPrint('Scheduled notification $id at $scheduledDate');
@@ -336,10 +335,10 @@ class NotificationService {
   /// Requirements: 11.5 - Allow users to enable/disable specific notifications
   Future<void> cancelMpasiReminders() async {
     try {
-      await _notifications.cancel(_mpasiMorningId);
-      await _notifications.cancel(_mpasiLunchId);
-      await _notifications.cancel(_mpasiAfternoonId);
-      await _notifications.cancel(_mpasiEveningId);
+      await _notifications.cancel(id: _mpasiMorningId);
+      await _notifications.cancel(id: _mpasiLunchId);
+      await _notifications.cancel(id: _mpasiAfternoonId);
+      await _notifications.cancel(id: _mpasiEveningId);
       debugPrint('MPASI reminders cancelled');
     } catch (e) {
       debugPrint('Error cancelling MPASI reminders: $e');
@@ -350,7 +349,7 @@ class NotificationService {
   /// Requirements: 11.5 - Allow users to enable/disable specific notifications
   Future<void> cancelVitaminReminder() async {
     try {
-      await _notifications.cancel(_vitaminReminderId);
+      await _notifications.cancel(id: _vitaminReminderId);
       debugPrint('Vitamin reminder cancelled');
     } catch (e) {
       debugPrint('Error cancelling vitamin reminder: $e');

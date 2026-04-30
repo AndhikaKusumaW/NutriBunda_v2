@@ -28,7 +28,7 @@ class ChatProvider extends ChangeNotifier {
   /// Requirements: 9.5 - Menampilkan peringatan di setiap sesi percakapan baru
   void initializeChat() {
     if (_isInitialized) return;
-
+    _chatService.startNewSession();
     _messages = [
       ChatMessage.ai(ChatService.getDisclaimerMessage()),
     ];

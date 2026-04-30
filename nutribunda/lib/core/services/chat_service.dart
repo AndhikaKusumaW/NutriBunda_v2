@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../constants/api_constants.dart';
 import '../errors/exceptions.dart';
+import 'dart:io';
 
 /// Service untuk mengelola integrasi dengan Gemini API
 /// Requirements: 9.1, 9.2, 9.3, 9.4 - TanyaBunda AI chatbot functionality
@@ -39,6 +40,7 @@ Selalu ingatkan bahwa informasi yang diberikan bersifat edukatif dan bukan pengg
 
   ChatService() {
     // Session is initialized lazily or explicitly via startNewSession
+    startNewSession();
   }
 
   /// Memulai sesi percakapan baru dengan Gemini
@@ -82,9 +84,12 @@ Selalu ingatkan bahwa informasi yang diberikan bersifat edukatif dan bukan pengg
         startNewSession();
       }
 
-      final response = await _chatSession!.sendMessage(
-        Content.text(message)
-      );
+      final response = await _chatSession!
+      .sendMessage(
+        Content.text(message))
+      .timeout(ApiConstants.geminiTimeout, onTimeout: () {
+          throw ChatException('Request timeout', ChatErrorType.apiTimeout);
+      });
 
       final text = response.text;
       if (text == null || text.isEmpty) {
@@ -93,8 +98,11 @@ Selalu ingatkan bahwa informasi yang diberikan bersifat edukatif dan bukan pengg
           ChatErrorType.invalidResponse,
         );
       }
-
       return text;
+    } on TimeoutException {
+      throw ChatException('Timeout', ChatErrorType.apiTimeout);
+    } on SocketException {
+      throw ChatException('No Internet', ChatErrorType.networkError);
     } on GenerativeAIException catch (e) {
       throw ChatException(
         'Gagal memproses pesan: ${e.message}',
