@@ -50,7 +50,7 @@ void main() {
       final userMessage = 'Apa itu MPASI?';
       final aiResponse = 'MPASI adalah Makanan Pendamping ASI...';
 
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => aiResponse);
 
       // Act
@@ -75,7 +75,7 @@ void main() {
 
       // Assert
       expect(chatProvider.messages.length, equals(1)); // Only disclaimer
-      verifyNever(mockChatService.sendMessage(any, any));
+      verifyNever(mockChatService.sendMessage(any));
     });
 
     test('should set loading state while sending message', () async {
@@ -84,7 +84,7 @@ void main() {
       final userMessage = 'Test message';
       bool wasLoading = false;
 
-      when(mockChatService.sendMessage(any, any)).thenAnswer((_) async {
+      when(mockChatService.sendMessage(any)).thenAnswer((_) async {
         wasLoading = chatProvider.isLoading;
         return 'Response';
       });
@@ -106,7 +106,7 @@ void main() {
         ChatErrorType.networkError,
       );
 
-      when(mockChatService.sendMessage(any, any)).thenThrow(exception);
+      when(mockChatService.sendMessage(any)).thenThrow(exception);
 
       // Act
       await chatProvider.sendMessage(userMessage);
@@ -123,7 +123,7 @@ void main() {
       chatProvider.initializeChat();
       final userMessage = 'Test message';
 
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenThrow(Exception('Unknown error'));
 
       // Act
@@ -141,14 +141,14 @@ void main() {
       chatProvider.initializeChat();
       
       // First message fails
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenThrow(ChatException('Error', ChatErrorType.networkError));
       await chatProvider.sendMessage('First message');
       
       expect(chatProvider.errorMessage, isNotNull);
 
       // Second message succeeds
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Success');
 
       // Act
@@ -162,11 +162,11 @@ void main() {
       // Arrange
       chatProvider.initializeChat();
       
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response 1');
       await chatProvider.sendMessage('Message 1');
 
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response 2');
 
       // Act
@@ -175,16 +175,10 @@ void main() {
       // Assert
       final captured = verify(mockChatService.sendMessage(
         captureAny,
-        captureAny,
       )).captured;
 
       // Should be called twice (once for each message)
-      expect(captured.length, equals(4)); // 2 calls x 2 parameters = 4 captures
-      
-      // Second call should have history
-      final secondCallHistory = captured[3] as List<ChatMessage>;
-      // History should exclude disclaimer and current message
-      expect(secondCallHistory.length, greaterThanOrEqualTo(0));
+      expect(captured.length, equals(2)); // 2 calls x 1 parameter = 2 captures
     });
   });
 
@@ -220,7 +214,7 @@ void main() {
     test('should clear error message', () {
       // Arrange
       chatProvider.initializeChat();
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenThrow(ChatException('Error', ChatErrorType.networkError));
       chatProvider.sendMessage('Test');
 
@@ -243,7 +237,7 @@ void main() {
 
     test('hasMessages should return true when user messages exist', () async {
       chatProvider.initializeChat();
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response');
       
       await chatProvider.sendMessage('Test');
@@ -265,7 +259,7 @@ void main() {
     test('should return correct conversation summary', () async {
       // Arrange
       chatProvider.initializeChat();
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response');
       
       await chatProvider.sendMessage('Test 1');
@@ -286,7 +280,7 @@ void main() {
     test('should handle rapid consecutive messages correctly', () async {
       // Arrange
       chatProvider.initializeChat();
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async {
         // Simulate API delay
         await Future.delayed(Duration(milliseconds: 100));
@@ -310,7 +304,7 @@ void main() {
     test('should maintain message order in conversation history', () async {
       // Arrange
       chatProvider.initializeChat();
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'AI Response');
 
       // Act
@@ -332,7 +326,7 @@ void main() {
     test('should handle very long conversation history', () async {
       // Arrange
       chatProvider.initializeChat();
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response');
 
       // Act - Create a long conversation
@@ -343,15 +337,8 @@ void main() {
       // Assert
       expect(chatProvider.messages.length, equals(31)); // Disclaimer + 15 user + 15 AI
       
-      // Verify that chat service was called with limited history
-      final captured = verify(mockChatService.sendMessage(
-        captureAny,
-        captureAny,
-      )).captured;
-
-      // Each call should have limited history (last call should have at most 10 previous messages)
-      final lastCallHistory = captured.last as List<ChatMessage>;
-      expect(lastCallHistory.length, lessThanOrEqualTo(28)); // Excluding current message and disclaimer
+      // Verify that chat service was called
+      verify(mockChatService.sendMessage(captureAny)).called(15);
     });
 
     test('should preserve conversation context after error recovery', () async {
@@ -359,17 +346,17 @@ void main() {
       chatProvider.initializeChat();
       
       // First successful message
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'First response');
       await chatProvider.sendMessage('First message');
 
       // Second message fails
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenThrow(ChatException('Error', ChatErrorType.networkError));
       await chatProvider.sendMessage('Second message');
 
       // Third message succeeds
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Third response');
       await chatProvider.sendMessage('Third message');
 
@@ -397,7 +384,7 @@ void main() {
 
       // Assert
       expect(chatProvider.messages.length, equals(initialMessageCount));
-      verifyNever(mockChatService.sendMessage(any, any));
+      verifyNever(mockChatService.sendMessage(any));
     });
 
     test('should handle special characters in messages', () async {
@@ -405,7 +392,7 @@ void main() {
       chatProvider.initializeChat();
       final specialMessage = 'Bagaimana cara membuat bubur "halus" untuk bayi? 🍼👶';
       
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response with emojis 😊');
 
       // Act
@@ -422,7 +409,7 @@ void main() {
       chatProvider.initializeChat();
       final longMessage = 'A' * 1000; // 1000 character message
       
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response to long message');
 
       // Act
@@ -433,7 +420,7 @@ void main() {
       expect(chatProvider.messages[1].content, equals(longMessage));
       
       // Verify the long message was passed to the service
-      verify(mockChatService.sendMessage(longMessage, any)).called(1);
+      verify(mockChatService.sendMessage(longMessage)).called(1);
     });
   });
 
@@ -442,7 +429,7 @@ void main() {
       // Arrange
       chatProvider.initializeChat();
       
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenThrow(ChatException('Network error', ChatErrorType.networkError));
 
       // Act
@@ -478,7 +465,7 @@ void main() {
 
       // Act & Assert
       for (int i = 0; i < errorTypes.length; i++) {
-        when(mockChatService.sendMessage(any, any))
+        when(mockChatService.sendMessage(any))
             .thenThrow(ChatException('Error $i', errorTypes[i]));
         
         await chatProvider.sendMessage('Message $i');
@@ -492,7 +479,7 @@ void main() {
       // Arrange
       chatProvider.initializeChat();
       
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => '');
 
       // Act
@@ -514,7 +501,7 @@ void main() {
         notificationCount++;
       });
 
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response');
 
       // Act
@@ -533,7 +520,7 @@ void main() {
         loadingStates.add(chatProvider.isLoading);
       });
 
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async {
         await Future.delayed(Duration(milliseconds: 50));
         return 'Response';
@@ -556,7 +543,7 @@ void main() {
         errorStates.add(chatProvider.errorMessage);
       });
 
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenThrow(ChatException('Error', ChatErrorType.networkError));
 
       // Act
@@ -588,7 +575,7 @@ void main() {
       chatProvider.initializeChat();
       expect(chatProvider.hasUserMessages, isFalse);
 
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response');
 
       // Act
@@ -602,7 +589,7 @@ void main() {
       // Arrange
       chatProvider.initializeChat();
       
-      when(mockChatService.sendMessage(any, any))
+      when(mockChatService.sendMessage(any))
           .thenAnswer((_) async => 'Response');
 
       // Act

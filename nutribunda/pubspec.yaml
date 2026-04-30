@@ -48,6 +48,9 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.4
 
+  # Gemini AI
+  google_generative_ai: ^0.4.6
+
   # Image Handling
   image_picker: ^1.1.2
   image: ^4.3.0

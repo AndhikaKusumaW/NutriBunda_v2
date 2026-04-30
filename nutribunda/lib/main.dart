@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
           create: (_) => di.sl<QuizProvider>(),
         ),
         ChangeNotifierProvider(
-          create: (_) => di.sl<NotificationProvider>(),
+          create: (_) => di.sl<NotificationProvider>()..initialize(),
         ),
         ChangeNotifierProvider(
           create: (_) => di.sl<DietPlanProvider>(),

@@ -17,6 +17,29 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _biometricAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricAvailability();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    try {
+      final authProvider = context.read<AuthProvider>();
+      // Hanya cek apakah device mendukung biometrik (bukan apakah user sudah enable)
+      // Agar tombol selalu tampil di device yang support
+      final isSupported = await authProvider.biometricService.isDeviceSupported();
+      if (mounted) {
+        setState(() {
+          _biometricAvailable = isSupported;
+        });
+      }
+    } catch (_) {
+      // Biometric not available, keep false
+    }
+  }
 
   @override
   void dispose() {
@@ -42,6 +65,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (success && mounted) {
       // Navigate to main navigation screen with bottom navigation bar
+      Navigator.of(context).pushReplacementNamed('/main');
+    }
+  }
+
+  Future<void> _handleBiometricLogin() async {
+    final authProvider = context.read<AuthProvider>();
+    authProvider.clearError();
+
+    // Cek apakah biometric sudah diaktifkan di settings
+    final isEnabled = await authProvider.biometricService.isBiometricEnabled();
+    if (!isEnabled) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Biometrik belum diaktifkan. Silakan login terlebih dahulu, '
+              'lalu aktifkan di Settings → Pengaturan Biometrik.',
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
+
+    final success = await authProvider.loginWithBiometric();
+
+    if (success && mounted) {
       Navigator.of(context).pushReplacementNamed('/main');
     }
   }
@@ -221,6 +273,54 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
+
+                // Biometric Login Button
+                if (_biometricAvailable)
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              const Expanded(child: Divider()),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'atau',
+                                  style: TextStyle(color: Colors.grey[500]),
+                                ),
+                              ),
+                              const Expanded(child: Divider()),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          OutlinedButton.icon(
+                            onPressed: authProvider.isLoading
+                                ? null
+                                : _handleBiometricLogin,
+                            icon: const Icon(Icons.fingerprint, size: 28),
+                            label: const Text(
+                              'Masuk dengan Biometrik',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              side: BorderSide(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      );
+                    },
+                  ),
 
                 // Register Link
                 Row(

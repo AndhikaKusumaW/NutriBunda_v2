@@ -54,15 +54,9 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Get conversation history (exclude disclaimer message)
-      final history = _messages
-          .where((msg) => msg.content != ChatService.getDisclaimerMessage())
-          .toList();
-
-      // Send to Gemini API
+      // Send to Gemini API (history is handled internally by ChatSession)
       final response = await _chatService.sendMessage(
         message.trim(),
-        history.sublist(0, history.length - 1), // Exclude current message
       );
 
       // Add AI response
@@ -99,6 +93,7 @@ class ChatProvider extends ChangeNotifier {
   /// Restart conversation dengan disclaimer baru
   void restartConversation() {
     clearConversation();
+    _chatService.startNewSession(); // Initialize a fresh ChatSession
     initializeChat();
   }
 

@@ -249,11 +249,18 @@ class NotificationService {
         location,
       );
 
-      const NotificationDetails notificationDetails = NotificationDetails(
+      final String channelName = channelId == _vitaminChannelId
+          ? 'Pengingat Vitamin'
+          : 'Pengingat MPASI';
+      final String channelDesc = channelId == _vitaminChannelId
+          ? 'Notifikasi pengingat minum vitamin ibu'
+          : 'Notifikasi pengingat jadwal makan MPASI bayi';
+
+      final NotificationDetails notificationDetails = NotificationDetails(
         android: AndroidNotificationDetails(
-          _mpasiChannelId,
-          'Pengingat MPASI',
-          channelDescription: 'Notifikasi pengingat jadwal makan MPASI bayi',
+          channelId,
+          channelName,
+          channelDescription: channelDesc,
           importance: Importance.high,
           priority: Priority.high,
           showWhen: true,
@@ -261,7 +268,7 @@ class NotificationService {
           playSound: true,
           enableVibration: true,
         ),
-        iOS: DarwinNotificationDetails(
+        iOS: const DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,

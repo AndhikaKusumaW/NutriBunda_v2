@@ -37,7 +37,22 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           
-
+          const Divider(height: 1),
+          
+          ListTile(
+            leading: const Icon(Icons.fingerprint),
+            title: const Text('Pengaturan Biometrik'),
+            subtitle: const Text('Atur login dengan sidik jari atau Face ID'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BiometricSettingsPage(),
+                ),
+              );
+            },
+          ),
           
           // About Section
           _buildSectionHeader('Tentang'),

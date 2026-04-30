@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/services/notification_service_ref.dart';
+import 'package:provider/provider.dart';
+import '../../providers/notification_provider.dart';
 
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({super.key});
@@ -11,39 +12,29 @@ class NotificationSettingsPage extends StatefulWidget {
 
 class _NotificationSettingsPageState
     extends State<NotificationSettingsPage> {
-  // ── Enabled states ──────────────────────────────────────────────────────
-  bool _sarapanEnabled = true;
-  bool _makanSiangEnabled = true;
-  bool _snackBayiEnabled = false;
-  bool _makanMalamEnabled = true;
-  bool _vitaminEnabled = true;
-
-  // ── Default times ───────────────────────────────────────────────────────
-  TimeOfDay _sarapanTime = const TimeOfDay(hour: 7, minute: 0);
-  TimeOfDay _siangTime = const TimeOfDay(hour: 12, minute: 0);
-  TimeOfDay _snackBayiTime = const TimeOfDay(hour: 15, minute: 0);
-  TimeOfDay _malamTime = const TimeOfDay(hour: 18, minute: 0);
-  TimeOfDay _vitaminTime = const TimeOfDay(hour: 20, minute: 0);
-
-  // ── Notification IDs ────────────────────────────────────────────────────
-  // Sarapan    → 1
-  // Makan Siang → 2
-  // Snack Bayi  → 3
-  // Makan Malam → 4
-  // Vitamin     → 999
 
   @override
   void initState() {
     super.initState();
-    final svc = NotificationServiceRef();
-    svc.initialize();
+    // Ensure provider is initialized and permission is requested
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<NotificationProvider>();
+      if (!provider.isInitialized) {
+        provider.initialize();
+      }
+    });
   }
 
-  Future<void> _pickTime(
-      TimeOfDay current, ValueChanged<TimeOfDay> onPicked) async {
+  Future<void> _pickVitaminTime(NotificationProvider provider) async {
+    final parts = provider.vitaminTime.split(':');
+    final currentTime = TimeOfDay(
+      hour: int.tryParse(parts[0]) ?? 8,
+      minute: int.tryParse(parts[1]) ?? 0,
+    );
+
     final picked = await showTimePicker(
       context: context,
-      initialTime: current,
+      initialTime: currentTime,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.light(primary: Color(0xFFE91E8C)),
@@ -51,98 +42,22 @@ class _NotificationSettingsPageState
         child: child!,
       ),
     );
-    if (picked != null) onPicked(picked);
-  }
 
-  Future<void> _saveAll() async {
-    final svc = NotificationServiceRef();
-    await svc.requestPermission();
-
-    // Sarapan – ID 1
-    if (_sarapanEnabled) {
-      await svc.scheduleDaily(
-        id: 1,
-        title: '🌅 Sarapan Yuk Bunda!',
-        body: 'Jangan lupa sarapan untuk energi seharian.',
-        hour: _sarapanTime.hour,
-        minute: _sarapanTime.minute,
-      );
-    } else {
-      await svc.cancelNotification(1);
-    }
-
-    // Makan Siang – ID 2
-    if (_makanSiangEnabled) {
-      await svc.scheduleDaily(
-        id: 2,
-        title: '☀️ Waktunya Makan Siang!',
-        body: 'Pastikan asupan nutrisi siang hari tercukupi.',
-        hour: _siangTime.hour,
-        minute: _siangTime.minute,
-      );
-    } else {
-      await svc.cancelNotification(2);
-    }
-
-    // Snack Bayi – ID 3
-    if (_snackBayiEnabled) {
-      await svc.scheduleDaily(
-        id: 3,
-        title: '🍪 Snack Bayi!',
-        body: 'Waktunya snack bergizi untuk si kecil.',
-        hour: _snackBayiTime.hour,
-        minute: _snackBayiTime.minute,
-      );
-    } else {
-      await svc.cancelNotification(3);
-    }
-
-    // Makan Malam – ID 4
-    if (_makanMalamEnabled) {
-      await svc.scheduleDaily(
-        id: 4,
-        title: '🌙 Makan Malam Bunda',
-        body: 'Atur porsi makan malam agar tidak berlebihan.',
-        hour: _malamTime.hour,
-        minute: _malamTime.minute,
-      );
-    } else {
-      await svc.cancelNotification(4);
-    }
-
-    // Vitamin – ID 999
-    if (_vitaminEnabled) {
-      await svc.scheduleDaily(
-        id: 999,
-        title: '💊 Jangan Lupa Vitamin!',
-        body: 'Konsumsi vitamin harian untuk Bunda dan bayi.',
-        hour: _vitaminTime.hour,
-        minute: _vitaminTime.minute,
-      );
-    } else {
-      await svc.cancelNotification(999);
-    }
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pengingat berhasil disimpan ✅'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    if (picked != null) {
+      final timeStr =
+          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      await provider.setVitaminTime(timeStr);
     }
   }
 
   Widget _reminderTile({
     required String title,
-    required String subtitle,
+    required String timeLabel,
     required IconData icon,
     required Color color,
     required bool enabled,
-    required TimeOfDay time,
     required ValueChanged<bool> onToggle,
-    required VoidCallback onTimeTap,
+    VoidCallback? onTimeTap,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -156,7 +71,7 @@ class _NotificationSettingsPageState
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 22),
@@ -173,7 +88,9 @@ class _NotificationSettingsPageState
                 GestureDetector(
                   onTap: enabled ? onTimeTap : null,
                   child: Text(
-                    '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} • Ketuk untuk ubah',
+                    onTimeTap != null
+                        ? '$timeLabel • Ketuk untuk ubah'
+                        : timeLabel,
                     style: TextStyle(
                         fontSize: 12,
                         color: enabled ? color : Colors.grey.shade400),
@@ -185,7 +102,7 @@ class _NotificationSettingsPageState
           Switch(
             value: enabled,
             onChanged: onToggle,
-            activeColor: color,
+            activeThumbColor: color,
           ),
         ],
       ),
@@ -199,89 +116,230 @@ class _NotificationSettingsPageState
         title: const Text('Pengingat Makan & Vitamin',
             style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          // Sarapan – ID 1
-          _reminderTile(
-            title: 'Sarapan',
-            subtitle: 'Setiap pagi',
-            icon: Icons.wb_sunny_outlined,
-            color: const Color(0xFFE91E8C),
-            enabled: _sarapanEnabled,
-            time: _sarapanTime,
-            onToggle: (v) => setState(() => _sarapanEnabled = v),
-            onTimeTap: () => _pickTime(
-                _sarapanTime, (t) => setState(() => _sarapanTime = t)),
-          ),
+      body: Consumer<NotificationProvider>(
+        builder: (context, provider, child) {
+          // Show loading while initializing
+          if (provider.isLoading && !provider.isInitialized) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // Makan Siang – ID 2
-          _reminderTile(
-            title: 'Makan Siang',
-            subtitle: 'Setiap siang',
-            icon: Icons.lunch_dining_outlined,
-            color: const Color(0xFFFF9800),
-            enabled: _makanSiangEnabled,
-            time: _siangTime,
-            onToggle: (v) => setState(() => _makanSiangEnabled = v),
-            onTimeTap: () =>
-                _pickTime(_siangTime, (t) => setState(() => _siangTime = t)),
-          ),
+          // If permission not granted, show request button
+          if (!provider.permissionGranted) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.notifications_off,
+                        size: 64, color: Colors.grey.shade400),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Izin Notifikasi Diperlukan',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Untuk mengirim pengingat makan dan vitamin, aplikasi memerlukan izin notifikasi.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: provider.isLoading
+                          ? null
+                          : () async {
+                              final granted =
+                                  await provider.requestPermissions();
+                              if (!granted && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Izin notifikasi ditolak. Aktifkan di Pengaturan perangkat.'),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                              }
+                            },
+                      icon: const Icon(Icons.notifications_active),
+                      label: const Text('Izinkan Notifikasi'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE91E8C),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
 
-          // Snack Bayi – ID 3 (NEW)
-          _reminderTile(
-            title: 'Snack Bayi',
-            subtitle: 'Snack bergizi si kecil',
-            icon: Icons.cookie_outlined,
-            color: const Color(0xFF4CAF50),
-            enabled: _snackBayiEnabled,
-            time: _snackBayiTime,
-            onToggle: (v) => setState(() => _snackBayiEnabled = v),
-            onTimeTap: () => _pickTime(
-                _snackBayiTime, (t) => setState(() => _snackBayiTime = t)),
-          ),
+          // Main settings UI
+          return ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              // ── Timezone Selector ─────────────────────────────
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.public,
+                          color: Colors.indigo, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Text('Zona Waktu',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 14)),
+                    ),
+                    DropdownButton<String>(
+                      value: provider.timezone,
+                      underline: const SizedBox(),
+                      items: provider.timezoneOptions.map((tz) {
+                        return DropdownMenuItem(
+                          value: tz,
+                          child: Text(tz,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          provider.changeTimezone(value);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
 
-          // Makan Malam – ID 4 (was 3)
-          _reminderTile(
-            title: 'Makan Malam',
-            subtitle: 'Setiap malam',
-            icon: Icons.dinner_dining_outlined,
-            color: const Color(0xFF9C27B0),
-            enabled: _makanMalamEnabled,
-            time: _malamTime,
-            onToggle: (v) => setState(() => _makanMalamEnabled = v),
-            onTimeTap: () =>
-                _pickTime(_malamTime, (t) => setState(() => _malamTime = t)),
-          ),
+              // ── Section Label: MPASI ──────────────────────────
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8, left: 4),
+                child: Text('Pengingat MPASI',
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600)),
+              ),
 
-          // Vitamin – ID 999 (was 4)
-          _reminderTile(
-            title: 'Minum Vitamin',
-            subtitle: 'Setiap hari',
-            icon: Icons.medication_outlined,
-            color: const Color(0xFF2196F3),
-            enabled: _vitaminEnabled,
-            time: _vitaminTime,
-            onToggle: (v) => setState(() => _vitaminEnabled = v),
-            onTimeTap: () => _pickTime(
-                _vitaminTime, (t) => setState(() => _vitaminTime = t)),
-          ),
+              // Master MPASI toggle
+              _reminderTile(
+                title: 'Semua Pengingat MPASI',
+                timeLabel: 'Aktifkan/nonaktifkan semua',
+                icon: Icons.restaurant_menu,
+                color: const Color(0xFFE91E8C),
+                enabled: provider.mpasiEnabled,
+                onToggle: (v) => provider.toggleMpasiNotifications(v),
+              ),
 
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: _saveAll,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE91E8C),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-            ),
-            child: const Text('Simpan Pengaturan',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-          ),
-        ],
+              // Individual meal toggles (only when master is enabled)
+              if (provider.mpasiEnabled) ...[
+                // Sarapan — index 0
+                _reminderTile(
+                  title: 'Sarapan',
+                  timeLabel: '07:00',
+                  icon: Icons.wb_sunny_outlined,
+                  color: const Color(0xFFE91E8C),
+                  enabled: provider.mpasiMeals[0],
+                  onToggle: (v) => provider.toggleMpasiMeal(0, v),
+                ),
+                // Makan Siang — index 1
+                _reminderTile(
+                  title: 'Makan Siang',
+                  timeLabel: '12:00',
+                  icon: Icons.lunch_dining_outlined,
+                  color: const Color(0xFFFF9800),
+                  enabled: provider.mpasiMeals[1],
+                  onToggle: (v) => provider.toggleMpasiMeal(1, v),
+                ),
+                // Makan Sore — index 2
+                _reminderTile(
+                  title: 'Makan Sore',
+                  timeLabel: '17:00',
+                  icon: Icons.cookie_outlined,
+                  color: const Color(0xFF4CAF50),
+                  enabled: provider.mpasiMeals[2],
+                  onToggle: (v) => provider.toggleMpasiMeal(2, v),
+                ),
+                // Makan Malam — index 3
+                _reminderTile(
+                  title: 'Makan Malam',
+                  timeLabel: '19:00',
+                  icon: Icons.dinner_dining_outlined,
+                  color: const Color(0xFF9C27B0),
+                  enabled: provider.mpasiMeals[3],
+                  onToggle: (v) => provider.toggleMpasiMeal(3, v),
+                ),
+              ],
+
+              const SizedBox(height: 8),
+
+              // ── Section Label: Vitamin ─────────────────────────
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8, left: 4),
+                child: Text('Pengingat Vitamin',
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600)),
+              ),
+
+              // Vitamin toggle
+              _reminderTile(
+                title: 'Minum Vitamin',
+                timeLabel: provider.formatTimeForDisplay(provider.vitaminTime),
+                icon: Icons.medication_outlined,
+                color: const Color(0xFF2196F3),
+                enabled: provider.vitaminEnabled,
+                onToggle: (v) => provider.toggleVitaminNotifications(v),
+                onTimeTap: () => _pickVitaminTime(provider),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Status summary ─────────────────────────────────
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 18, color: Colors.grey.shade600),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        provider.getNotificationSummary(),
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

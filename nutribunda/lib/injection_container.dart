@@ -90,7 +90,7 @@ Future<void> init() async {
   // Chat Service - untuk integrasi dengan Gemini API
   // Requirements: 9.1, 9.2, 9.3, 9.4
   sl.registerLazySingleton<ChatService>(
-    () => ChatService(dio: sl()),
+    () => ChatService(),
   );
   
   // Quiz Service - untuk quiz game functionality

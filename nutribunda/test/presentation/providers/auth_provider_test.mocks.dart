@@ -451,6 +451,32 @@ class MockSecureStorageService extends _i1.Mock
           as _i5.Future<bool>);
 
   @override
+  _i5.Future<void> setLastSyncTime(String? timestamp) =>
+      (super.noSuchMethod(
+            Invocation.method(#setLastSyncTime, [timestamp]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<String?> getLastSyncTime() =>
+      (super.noSuchMethod(
+            Invocation.method(#getLastSyncTime, []),
+            returnValue: _i5.Future<String?>.value(),
+          )
+          as _i5.Future<String?>);
+
+  @override
+  _i5.Future<void> clearLastSyncTime() =>
+      (super.noSuchMethod(
+            Invocation.method(#clearLastSyncTime, []),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
   _i5.Future<void> clearAll() =>
       (super.noSuchMethod(
             Invocation.method(#clearAll, []),

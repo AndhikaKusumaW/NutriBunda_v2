@@ -6,9 +6,8 @@
 import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
+import 'package:mockito/src/dummies.dart' as _i4;
 import 'package:nutribunda/core/services/chat_service.dart' as _i2;
-import 'package:nutribunda/data/models/chat_message.dart' as _i4;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -34,16 +33,19 @@ class MockChatService extends _i1.Mock implements _i2.ChatService {
   }
 
   @override
-  _i3.Future<String> sendMessage(
-    String? message,
-    List<_i4.ChatMessage>? conversationHistory,
-  ) =>
+  void startNewSession() => super.noSuchMethod(
+    Invocation.method(#startNewSession, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  _i3.Future<String> sendMessage(String? message) =>
       (super.noSuchMethod(
-            Invocation.method(#sendMessage, [message, conversationHistory]),
+            Invocation.method(#sendMessage, [message]),
             returnValue: _i3.Future<String>.value(
-              _i5.dummyValue<String>(
+              _i4.dummyValue<String>(
                 this,
-                Invocation.method(#sendMessage, [message, conversationHistory]),
+                Invocation.method(#sendMessage, [message]),
               ),
             ),
           )
