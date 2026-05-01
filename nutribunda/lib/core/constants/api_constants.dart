@@ -29,13 +29,13 @@ class ApiConstants {
   
   // Gemini API endpoints
   static const String geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
-  static const String geminiModel = 'gemini-2.0-flash-lite';
+  static const String geminiModel = 'gemini-2.5-flash';
   // API Key should be configured via environment variable or secure config
   // For development, you can set it here temporarily, but NEVER commit the actual key
-  static const String geminiApiKey = 'AIzaSyBe_wv-4FjxkpD32eV9AgB7ElkS3qFtN4o';
+  static const String geminiApiKey = 'AIzaSyDLBwJRFoR3mCjrtQeG6Ek1YWceUoxuvSA';
   
   // Timeout
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
-  static const Duration geminiTimeout = Duration(seconds: 10); // Requirement 9.2: < 10 seconds
+  static const Duration geminiTimeout = Duration(seconds: 60); 
 }

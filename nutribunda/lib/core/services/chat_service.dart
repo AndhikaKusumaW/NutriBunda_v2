@@ -40,7 +40,7 @@ Selalu ingatkan bahwa informasi yang diberikan bersifat edukatif dan bukan pengg
 
   ChatService() {
     // Session is initialized lazily or explicitly via startNewSession
-    startNewSession();
+      //startNewSession();
   }
 
   /// Memulai sesi percakapan baru dengan Gemini

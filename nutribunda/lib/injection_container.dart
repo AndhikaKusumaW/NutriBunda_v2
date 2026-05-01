@@ -186,7 +186,7 @@ Future<void> init() async {
   ));
   
   // Chat Provider - Requirements: 9.1, 9.2, 9.5, 9.6
-  sl.registerFactory(() => ChatProvider(
+  sl.registerLazySingleton(() => ChatProvider(
     chatService: sl(),
   ));
   
