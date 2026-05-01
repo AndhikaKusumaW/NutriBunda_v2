@@ -1,3 +1,4 @@
+
 class AppConstants {
   // App Info
   static const String appName = 'NutriBunda';

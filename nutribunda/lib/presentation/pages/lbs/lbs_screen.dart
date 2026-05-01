@@ -139,11 +139,11 @@ class _LBSScreenState extends State<LBSScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(28),
                     decoration: BoxDecoration(
-                      color: _pink.withValues(alpha: 0.08),
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.location_on_rounded,
-                        size: 72, color: _pink),
+                        size: 72, color: Colors.green),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -181,7 +181,7 @@ class _LBSScreenState extends State<LBSScreen> {
                         fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _pink,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: _pink.withValues(alpha: 0.5),
                     padding: const EdgeInsets.symmetric(vertical: 15),

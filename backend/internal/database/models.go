@@ -33,6 +33,7 @@ type Food struct {
 	ProteinPer100g  float64   `gorm:"type:decimal(5,2);not null" json:"protein_per_100g"`
 	CarbsPer100g    float64   `gorm:"type:decimal(5,2);not null" json:"carbs_per_100g"`
 	FatPer100g      float64   `gorm:"type:decimal(5,2);not null" json:"fat_per_100g"`
+	EstimatedPricePer100g *float64 `gorm:"type:decimal(10,2)" json:"estimated_price_per_100g"`
 	CreatedAt       time.Time `json:"created_at"`
 }
 

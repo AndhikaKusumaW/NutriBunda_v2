@@ -63,9 +63,10 @@ class DatabaseHelper {
         protein_per_100g REAL NOT NULL,
         carbs_per_100g REAL NOT NULL,
         fat_per_100g REAL NOT NULL,
+        estimated_price_per_100g REAL,  -- BARU (nullable)
         created_at TEXT NOT NULL,
         sync_status TEXT DEFAULT 'synced'
-      )
+        )   
     ''');
 
     // Create index for food search
@@ -194,9 +195,10 @@ class DatabaseHelper {
   /// Upgrade database schema
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     // Handle future schema migrations
-    if (oldVersion < 2) {
-      // Example migration for version 2
-      // await db.execute('ALTER TABLE users ADD COLUMN new_field TEXT');
+    if (oldVersion < 2){     
+      await db.execute(
+        'ALTER TABLE foods ADD COLUMN estimated_price_per_100g REAL',
+      );
     }
   }
 

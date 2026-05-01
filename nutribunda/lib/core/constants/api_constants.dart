@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConstants {
   // Base URL - will be configured later
   static const String baseUrl = 'http://localhost:8080/api';
@@ -32,7 +34,7 @@ class ApiConstants {
   static const String geminiModel = 'gemini-2.5-flash';
   // API Key should be configured via environment variable or secure config
   // For development, you can set it here temporarily, but NEVER commit the actual key
-  static const String geminiApiKey = 'AIzaSyDLBwJRFoR3mCjrtQeG6Ek1YWceUoxuvSA';
+  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
   
   // Timeout
   static const Duration connectionTimeout = Duration(seconds: 30);

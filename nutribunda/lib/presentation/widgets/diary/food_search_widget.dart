@@ -31,6 +31,19 @@ class _FoodSearchWidgetState extends State<FoodSearchWidget> {
     super.dispose();
   }
 
+  String _formatPrice(double price) {
+    final formatted = price.toStringAsFixed(0); 
+    final buffer = StringBuffer(); 
+    int cnt = 0; 
+    for(int i=formatted.length-1;i>=0;i--)
+    {
+      if(cnt >0 && cnt %3==0) buffer.write('.');
+      buffer.write(formatted[i]);
+      cnt++;
+    }
+    return buffer.toString().split('').reversed.join('');
+  }
+
   void _onSearchChanged(String query) {
     // Cancel previous timer
     if (_debounce?.isActive ?? false) _debounce!.cancel();
@@ -110,12 +123,25 @@ class _FoodSearchWidgetState extends State<FoodSearchWidget> {
                         food.name,
                         style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
-                      subtitle: Text(
-                        '${food.caloriesPer100g.toStringAsFixed(1)} kkal per 100g',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                      subtitle: Column(
+                        children: [
+                          Text(
+                            '${food.caloriesPer100g.toStringAsFixed(1)} kkal per 100g',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ), 
+                          if(food.estimatedPricePer100g != null) 
+                            Text(
+                              '~Rp ${_formatPrice(food.estimatedPricePer100g!)} / 100g',
+                                 style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.green[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            )
+                        ],
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () {

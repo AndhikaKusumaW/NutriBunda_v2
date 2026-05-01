@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'injection_container.dart' as di;
@@ -34,6 +35,8 @@ void main() async {
   
   // Initialize dependency injection
   await di.init();
+
+  await dotenv.load(fileName: ".env");
   
   runApp(const MyApp());
 }

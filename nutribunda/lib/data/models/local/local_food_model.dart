@@ -12,6 +12,7 @@ class LocalFoodModel extends Equatable {
   final double proteinPer100g;
   final double carbsPer100g;
   final double fatPer100g;
+  final double? estimatedPricePer100g;
   final DateTime createdAt;
   final String syncStatus; // 'synced', 'pending', 'failed'
 
@@ -24,6 +25,7 @@ class LocalFoodModel extends Equatable {
     required this.proteinPer100g,
     required this.carbsPer100g,
     required this.fatPer100g,
+    required this.estimatedPricePer100g,
     required this.createdAt,
     this.syncStatus = 'synced',
   });
@@ -38,6 +40,7 @@ class LocalFoodModel extends Equatable {
       proteinPer100g: food.proteinPer100g,
       carbsPer100g: food.carbsPer100g,
       fatPer100g: food.fatPer100g,
+      estimatedPricePer100g: food.estimatedPricePer100g,
       createdAt: food.createdAt,
       syncStatus: 'synced',
     );
@@ -53,6 +56,7 @@ class LocalFoodModel extends Equatable {
       proteinPer100g: proteinPer100g,
       carbsPer100g: carbsPer100g,
       fatPer100g: fatPer100g,
+      estimatedPricePer100g: estimatedPricePer100g,
       createdAt: createdAt,
     );
   }
@@ -68,6 +72,9 @@ class LocalFoodModel extends Equatable {
       proteinPer100g: (map['protein_per_100g'] as num).toDouble(),
       carbsPer100g: (map['carbs_per_100g'] as num).toDouble(),
       fatPer100g: (map['fat_per_100g'] as num).toDouble(),
+      estimatedPricePer100g: map['estimated_price_per_100g'] != null // BARU
+          ? (map['estimated_price_per_100g'] as num).toDouble()
+          : null,
       createdAt: DateTime.parse(map['created_at'] as String),
       syncStatus: map['sync_status'] as String? ?? 'synced',
     );
@@ -84,6 +91,7 @@ class LocalFoodModel extends Equatable {
       'protein_per_100g': proteinPer100g,
       'carbs_per_100g': carbsPer100g,
       'fat_per_100g': fatPer100g,
+      'estimated_price_per_100g': estimatedPricePer100g,
       'created_at': createdAt.toIso8601String(),
       'sync_status': syncStatus,
     };
@@ -110,6 +118,7 @@ class LocalFoodModel extends Equatable {
     double? proteinPer100g,
     double? carbsPer100g,
     double? fatPer100g,
+    double? estimatedPricePer100g,
     DateTime? createdAt,
     String? syncStatus,
   }) {
@@ -122,6 +131,7 @@ class LocalFoodModel extends Equatable {
       proteinPer100g: proteinPer100g ?? this.proteinPer100g,
       carbsPer100g: carbsPer100g ?? this.carbsPer100g,
       fatPer100g: fatPer100g ?? this.fatPer100g,
+      estimatedPricePer100g: estimatedPricePer100g ?? this.estimatedPricePer100g,
       createdAt: createdAt ?? this.createdAt,
       syncStatus: syncStatus ?? this.syncStatus,
     );
@@ -137,6 +147,7 @@ class LocalFoodModel extends Equatable {
         proteinPer100g,
         carbsPer100g,
         fatPer100g,
+        estimatedPricePer100g,
         createdAt,
         syncStatus,
       ];

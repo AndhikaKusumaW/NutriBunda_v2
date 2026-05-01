@@ -11,6 +11,7 @@ class FoodModel extends Equatable {
   final double proteinPer100g;
   final double carbsPer100g;
   final double fatPer100g;
+  final double? estimatedPricePer100g;
   final DateTime createdAt;
 
   const FoodModel({
@@ -21,6 +22,7 @@ class FoodModel extends Equatable {
     required this.proteinPer100g,
     required this.carbsPer100g,
     required this.fatPer100g,
+    required this.estimatedPricePer100g,
     required this.createdAt,
   });
 
@@ -34,6 +36,9 @@ class FoodModel extends Equatable {
       proteinPer100g: (json['protein_per_100g'] as num).toDouble(),
       carbsPer100g: (json['carbs_per_100g'] as num).toDouble(),
       fatPer100g: (json['fat_per_100g'] as num).toDouble(),
+      estimatedPricePer100g: json['estimated_price_per_100g'] != null
+          ? (json['estimated_price_per_100g'] as num).toDouble()
+          : null,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -48,9 +53,11 @@ class FoodModel extends Equatable {
       'protein_per_100g': proteinPer100g,
       'carbs_per_100g': carbsPer100g,
       'fat_per_100g': fatPer100g,
+      'estimated_per_price_100g': estimatedPricePer100g,
       'created_at': createdAt.toIso8601String(),
     };
   }
+
 
   /// Calculate nutrition for a specific serving size
   NutritionInfo calculateNutrition(double servingSizeGrams) {
@@ -72,6 +79,7 @@ class FoodModel extends Equatable {
         proteinPer100g,
         carbsPer100g,
         fatPer100g,
+        estimatedPricePer100g,
         createdAt,
       ];
 }
